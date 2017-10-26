@@ -24,10 +24,10 @@
 (defmacro deftable (name (&rest cols) &body rows)
   `(deftable1 ',name ',cols ',rows))
 
-(defun defcol (tb z pos &aux (num #'name-num) (sym #'make-sym))
+(defun defcol (tb z pos &aux (num #'make-num) (sym #'make-sym))
   (labels
       ((is (y)   (eq (char (symbol-name z) 0) y))
-       (so (f y) (rslots-push tb (funcall f :name z :pos pos) y)))
+       (so (f y) (rslots-push  tb y (funcall f :name z :pos pos))))
     (cond
       ((is #\>) (so num '((xy all) (xy nums) (y all) (y nums) (more)   )))
       ((is #\<) (so num '((xy all) (xy nums) (y all) (y nums) (less)   )))
