@@ -3,6 +3,13 @@
     (dotimes (i n)
       (format s "~a" c))))
 
+(defmacro doitems ((one n list &optional out) &body body )
+  "Set 'one' and 'n' to each item in a list, and its position."
+  `(let ((,n -1))
+     (dolist (,one ,list ,out)
+       (incf ,n)
+       ,@body)))
+
 ;(deftest nchars? ()  (test (nchars 3 ".") "..."))
 
 (defun rslots-get (o l)

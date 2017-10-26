@@ -17,34 +17,25 @@
   ;(format str "(tbl ~a)" (length (tbl-rows x))))
 
 (defun deftable1 (name cols rows)
-  (let ((pos -1)
-        (tbl (make-tbl :name name :cols cols)))
-    (labels
-        ((one (col) (defcol tbl col (incf pos))))
-      (mapc #'one cols)
-      tbl)))
+  (let ((tb (make-tbl :name name :cols cols)))
+    (doitems (col pos cols tb)
+       (defcol tb col (incf pos)))))
 
 (defmacro deftable (name (&rest cols) &body rows)
   `(deftable1 ',name ',cols ',rows))
 
-(defun defcol1 (z pos)
+(defun defcol (tb z pos &aux (num #'name-num) (sym #'make-sym))
   (labels
-      ((num (y) (cons (make-num :name z :pos pos) y))
-       (sym (y) (cons (make-sym :name z :pos pos) y))
-       (is  (y) (eq (char (symbol-name z) 0) y)))
+      ((is (y)   (eq (char (symbol-name z) 0) y))
+       (so (f y) (rslots-push tb (funcall f :name z :pos pos) y)))
     (cond
-      ((is #\>) (num '((xy all) (xy nums) (y all) (y nums) (more)    )))
-      ((is #\<) (num '((xy all) (xy nums) (y all) (y nums) (less)    )))
-      ((is #\$) (num '((xy all) (xy nums) (x all) (x nums)           )))
-      ((is #\!) (sym '((xy all) (xy syms) (y all) (y syms) (klasses) )))
-      (t        (sym '((xy all) (xy syms) (x all) (x syms)        ))))))
-
+      ((is #\>) (so num '((xy all) (xy nums) (y all) (y nums) (more)   )))
+      ((is #\<) (so num '((xy all) (xy nums) (y all) (y nums) (less)   )))
+      ((is #\$) (so num '((xy all) (xy nums) (x all) (x nums)          )))
+      ((is #\!) (so sym '((xy all) (xy syms) (y all) (y syms) (klasses))))
+      (t        (so sym '((xy all) (xy syms) (x all) (x syms)        ))))))
+  
 (deftest col1 () (print (defcol1 '$x 0)))
-
-(defun defcol (tbl z pos)
-  (let ((spec (defcol1 z pos)))
-    (dolist (slots (cdr spec) tbl)
-      (rslots-push tbl slots (car spec)))))
 
 (deftest defcol? ()
   (let* ((tb   (make-tbl))
