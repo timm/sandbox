@@ -1,0 +1,33 @@
+(progn
+  (defstruct aa (a1 200) a2)
+  (defstruct bb (b1 (make-aa)) (b2))
+  (defstruct cc (c1 (make-bb)))
+  )
+
+(defun ?? (o l)
+  (setf (slot-value o (car l))
+        (if (cdr l)
+            (?? (slot-value o (car l)) (cdr l))
+            (slot-value o (car l))))
+  o)
+
+(defun !! (o l z)
+  (setf (slot-value o (car l)) 
+        (if (cdr l)
+            (!! (slot-value o (car l)) (cdr l) z)
+            z))
+  o)
+
+(defun << (o l z)
+  (setf (slot-value o (car l))
+        (if (cdr l)
+            (<< (slot-value o (car l))  (cdr l) z)
+            (push z (slot-value o (car l)))))
+  o)
+
+(defun test ()
+  (let ((cc (make-cc)))
+    (?? cc '(c1 b1 a1))
+    (!! cc '(c1 b1 a2) 400)
+    (dotimes (i 10 cc)
+      (<< cc '(c1 b2) (+ 10000 (* i 10000))))))
