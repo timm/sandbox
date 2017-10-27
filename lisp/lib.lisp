@@ -5,7 +5,6 @@
 
 (defmacro doitems ((one n list &optional out) &body body )
   "Set 'one' and 'n' to each item in a list, and its position."
-  (declare (indent defun))
   `(let ((,n -1))
      (dolist (,one ,list ,out)
        (incf ,n)
@@ -13,20 +12,18 @@
 
 ;(deftest nchars? ()  (test (nchars 3 ".") "..."))
 
-(defun rslots-get (o l)
-  (if (cdr l)
-      (rslots-get (slot-value o (car l)) (cdr l))
-      (slot-value o (car l))))
+(defmacro ? (obj first-slot &rest more-slots)
+  "From https://goo.gl/dqnmvH"
+  (if (null more-slots)
+      `(slot-value ,obj ',first-slot)
+      `(? (slot-value ,obj ',first-slot) ,@more-slots)))
 
-(defun rslots-set (o l z)
-  (setf
-   (slot-value o (car l)) 
-   (if (cdr l)
-       (rslots-set (slot-value o (car l)) (cdr l) z)
-       z))
-  o)
+(defmacro repeats ((n &optional end) &rest body)
+  (let ((m (gensym)))
+    `(dotimes (,m ,n ,end)
+       ,@body)))
 
-(defun rslots-push (o l z)
+(defun slots-push (o l z)
   (setf
    (slot-value o (car l))
    (if (cdr l)
