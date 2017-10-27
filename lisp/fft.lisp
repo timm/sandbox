@@ -38,7 +38,7 @@
     (multiple-value-bind (what paths)
         (what-paths)
       (dolist (slots paths tb)
-        (rslots-push tb slots what)))))
+        (eval `(push ,what  (? ,tb ,@slots)))))))
 
 deftest col1 ()
   (print (defcol1 '$x 0)))

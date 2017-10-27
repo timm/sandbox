@@ -23,7 +23,7 @@
     `(dotimes (,m ,n ,end)
        ,@body)))
 
-(defun slots-push (o l z)
+(defun slots-push (o z slot & more-slots)l z)
   (setf
    (slot-value o (car l))
    (if (cdr l)
