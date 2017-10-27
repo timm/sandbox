@@ -24,7 +24,6 @@
 (defmacro deftable (name (&rest cols) &body rows)
   `(deftable1 ',name ',cols ',rows))
 
-
 (defun defcol (tb z pos)
   (labels
     ((num () (make-num :pos pos :name z))
