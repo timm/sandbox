@@ -19,7 +19,7 @@
 (defun deftable1 (name cols rows)
   (let ((tb (make-tbl :name name :cols cols)))
     (doitems (col pos cols tb)
-       (defcol tb col (incf pos)))))
+        (defcol tb col (incf pos)))))
 
 (defmacro deftable (name (&rest cols) &body rows)
   `(deftable1 ',name ',cols ',rows))
@@ -34,8 +34,10 @@
       ((is #\$) (so num '((xy all) (xy nums) (x all) (x nums)          )))
       ((is #\!) (so sym '((xy all) (xy syms) (y all) (y syms) (klasses))))
       (t        (so sym '((xy all) (xy syms) (x all) (x syms)        ))))))
-  
-(deftest col1 () (print (defcol1 '$x 0)))
+
+    
+(deftest col1 ()
+  (print (defcol1 '$x 0)))
 
 (deftest defcol? ()
   (let* ((tb   (make-tbl))
