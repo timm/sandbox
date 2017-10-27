@@ -5,6 +5,7 @@
 
 (defmacro doitems ((one n list &optional out) &body body )
   "Set 'one' and 'n' to each item in a list, and its position."
+  (declare (indent defun))
   `(let ((,n -1))
      (dolist (,one ,list ,out)
        (incf ,n)

@@ -3,6 +3,7 @@
 
 (defmacro deftest (name params  &body body)
   "Create a defun, adding it name to the list of *tests*."
+  (declare (indent defun))
   `(progn (unless (member ',name *tests*) (push ',name *tests*))
       (defun ,name ,params ,@body)))
 

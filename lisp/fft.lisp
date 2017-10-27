@@ -41,7 +41,7 @@
       (dolist (slots paths tb)
         (rslots-push tb slots what)))))
 
-(deftest col1 ()
+deftest col1 ()
   (print (defcol1 '$x 0)))
 
 (deftest defcol? ()
