@@ -2,13 +2,13 @@
   (defstruct num name pos (id (incf n)))
   (defstruct sym name pos (id (incf n))))
 
-(defstruct cols (all)  (nums) (syms))
+(defstruct cols (all)  (nums) (syms)) 
 (defstruct tbl name rows
            (cols)
-           (xy (make-cols))
+           (xy (make-cols))   
            (x  (make-cols))
-           (y  (make-cols))
-           (klasses)
+           (y  (make-cols)) 
+           (klasses) 
            (less)
            (more))
 
