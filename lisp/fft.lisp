@@ -19,23 +19,30 @@
 (defun deftable1 (name cols rows)
   (let ((tb (make-tbl :name name :cols cols)))
     (doitems (col pos cols tb)
-       (defcol tb col (incf pos)))))
+      (defcol tb col pos))))
 
 (defmacro deftable (name (&rest cols) &body rows)
   `(deftable1 ',name ',cols ',rows))
 
-(defun defcol (tb z pos &aux (num #'make-num) (sym #'make-sym))
+
+(defun defcol (tb z pos)
   (labels
-      ((is (y)   (eq (char (symbol-name z) 0) y))
-       (so (f y) (rslots-push  tb y (funcall f :name z :pos pos))))
-    (cond
-      ((is #\>) (so num '((xy all) (xy nums) (y all) (y nums) (more)   )))
-      ((is #\<) (so num '((xy all) (xy nums) (y all) (y nums) (less)   )))
-      ((is #\$) (so num '((xy all) (xy nums) (x all) (x nums)          )))
-      ((is #\!) (so sym '((xy all) (xy syms) (y all) (y syms) (klasses))))
-      (t        (so sym '((xy all) (xy syms) (x all) (x syms)        ))))))
-  
-(deftest col1 () (print (defcol1 '$x 0)))
+    ((num () (make-num :pos pos :name z))
+     (sym () (make-sym :pos pos :name z))
+     (what-paths ()
+       (case (char (symbol-name z) 0)
+         (> (values (num) '((xy all) (xy nums) (y all) (y nums) (more)   )))
+         (< (values (num) '((xy all) (xy nums) (y all) (y nums) (less)   )))
+         ($ (values (num) '((xy all) (xy nums) (x all) (x nums)          )))
+         (! (values (sym) '((xy all) (xy syms) (y all) (y syms) (klasses))))
+         (t (values (sym) '((xy all) (xy syms) (x all) (x syms)        ))))))
+    (multiple-value-bind (what paths)
+        (what-paths)
+      (dolist (slots paths tb)
+        (rslots-push tb slots what)))))
+
+(deftest col1 ()
+  (print (defcol1 '$x 0)))
 
 (deftest defcol? ()
   (let* ((tb   (make-tbl))
@@ -54,10 +61,10 @@
                 (overcast 72 90 TRUE yes)
                 (overcast 81 75 FALSE yes)
                 (rainy 71 91 TRUE no)))
-         (cols  (car eg))
-         (pos   -1))
-    (dolist (col cols tb)
-      (defcol tb col (incf pos)))))
+         (cols  (car eg)))
+    (doitems (z pos cols tb)
+      (defcol tb z pos))))
+
     
    
         
