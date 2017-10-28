@@ -12,25 +12,22 @@
 
 ;(deftest nchars? ()  (test (nchars 3 ".") "..."))
 
+(defun change (f obj slots)
+  (setf (slot-value obj (car slots))
+        (if (cdr slots)
+            (change (slot-value obj (car slots)) (cdr slots) f)
+            (funcall f (slot-value obj (car slots)))))
+  obj)
+
+(defmacro ! (f obj &rest slots)
+  `(change ,f ,obj ',slots))
+
 (defmacro ? (obj first-slot &rest more-slots)
   "From https://goo.gl/dqnmvH"
   (if (null more-slots)
       `(slot-value ,obj ',first-slot)
       `(? (slot-value ,obj ',first-slot) ,@more-slots)))
-
-(defmacro repeats ((n &optional end) &rest body)
-  (let ((m (gensym)))
-    `(dotimes (,m ,n ,end)
-       ,@body)))
-
-(defun slots-push (o z slot & more-slots)l z)
-  (setf
-   (slot-value o (car l))
-   (if (cdr l)
-       (rslots-push (slot-value o (car l)) (cdr l) z)
-       (push z (slot-value o (car l)))))
-  o)
-
+  
 (defmacro ?? (o   &rest l) `(rslots-get  ,o ',l   ))
 (defmacro !! (o z &rest l) `(rslots-set  ,o ',l ,z))
 (defmacro << (o z &rest l) `(rslots-push ,o ',l ,z))
