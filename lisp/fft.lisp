@@ -30,7 +30,7 @@
          (let ((col (funcall maker :name name :pos pos)))
            (dolist (slots list-of-slots)
              (change
-              (lambda (slot) (push col slot))
+              (lambda (slot) (cons col slot))
               tb slots)))))
     (case
         (char (symbol-name name) 0)
@@ -42,7 +42,8 @@
 
 (deftest col1 ()
   (let ((tb (make-tbl)))
-    (print (defcol tb '$x 0))))
+    (print (defcol tb '$x 0))
+    tb))
 
 (deftest defcol? ()
   (let* ((tb   (make-tbl))

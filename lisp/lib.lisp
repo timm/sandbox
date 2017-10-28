@@ -10,44 +10,48 @@
        (incf ,n)
        ,@body)))
 
-;(deftest nchars? ()  (test (nchars 3 ".") "..."))
 
+;;;; Simple access/update to recursive slots in LISP
+;;;; Tested on defstructs. Should also work on instances.
+;;;; Tim@menzies.us, Oct 2017 
+;;;; Builds on some excellent code from "Barmar", https://goo.gl/SQtNHd
 (defun change (f obj slots)
-  (setf (slot-value obj (car slots))
-        (if (cdr slots)
-            (change f (slot-value obj (car slots)) (cdr slots))
-            (funcall f (slot-value obj (car slots)))))
-  obj)
-
-(defmacro ! (f obj &rest slots)
-  `(change ,f ,obj ',slots))
+  "Use case 1: access path for slots not known till runtime.
+   In this case, pass in a function 'f' that will be used to
+   update the slot found after travesing all the slots."
+  (if (cdr slots)
+      (change f (slot-value obj (car slots)) (cdr slots))
+      (setf (slot-value obj (car slots))
+            (funcall f (slot-value obj (car slots))))))
 
 (defmacro ? (obj first-slot &rest more-slots)
-  "From https://goo.gl/dqnmvH"
+  "From https://goo.gl/dqnmvH.
+   Use case 2: access path known at load time.
+   In this case, pre-compute the access path as a macro."
   (if (null more-slots)
       `(slot-value ,obj ',first-slot)
       `(? (slot-value ,obj ',first-slot) ,@more-slots)))
-  
-(defmacro ?? (o   &rest l) `(rslots-get  ,o ',l   ))
-(defmacro !! (o z &rest l) `(rslots-set  ,o ',l ,z))
-(defmacro << (o z &rest l) `(rslots-push ,o ',l ,z))
 
+;;; Test code
+
+;; "(make-xxxx)" creates a recursive set of structs.
 (defstruct zzzz z1 (z2 0) (z3))
 (defstruct yyyy y1 y2 (y3 (make-zzzz)))
 (defstruct xxxx x1 x2 (x3 (make-yyyy)))
 
-(defun xyx-demo ()
+(defun xyz-demo ()
   (let ((tmp (make-xxxx)))
     (incf (? tmp  x3 y3 z2) 100)
     (dotimes (i 5)
       (push (+ 100 (* 100 i))  (? tmp x3 y3 z3)))
-    (change (lambda (slot) (incf slot))
+    (change (lambda (slot) (1+ slot))
        tmp '(x3 y3 z2))
-    (change (lambda (slot) (push 5555 slot))
+    (change (lambda (slot) (cons 5555 slot))
        tmp '(x3 y3 z3))
     (print (? tmp x3 y3 z3))
     (print (? tmp x3 y3 z2))
     tmp))
+
 
 (defun make-accessor-field (name form)
   `(,name
