@@ -34,14 +34,15 @@
               tb slots)))))
     (case
         (char (symbol-name name) 0)
-      (> (doit num '((xy all) (xy nums) (y all) (y nums) (more)   )))
-      (< (doit num '((xy all) (xy nums) (y all) (y nums) (less)   )))
-      ($ (doit num '((xy all) (xy nums) (x all) (x nums)          )))
-      (! (doit sym '((xy all) (xy syms) (y all) (y syms) (klasses))))
+      (#\> (doit num '((xy all) (xy nums) (y all) (y nums) (more)   )))
+      (#\< (doit num '((xy all) (xy nums) (y all) (y nums) (less)   )))
+      (#\$ (doit num '((xy all) (xy nums) (x all) (x nums)          )))
+      (#\! (doit sym '((xy all) (xy syms) (y all) (y syms) (klasses))))
       (t (doit sym '((xy all) (xy syms) (x all) (x syms)       ))))))
 
-deftest col1 ()
-  (print (defcol1 '$x 0)))
+(deftest col1 ()
+  (let ((tb (make-tbl)))
+    (print (defcol tb '$x 0))))
 
 (deftest defcol? ()
   (let* ((tb   (make-tbl))
