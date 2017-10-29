@@ -1,6 +1,16 @@
 ;;;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; test engine. adapted (simplied) from http://j.mp/fWeKZL
 
+defun file->linesOfChar (f)
+  (with-open-file (str f) 
+    (stream->linesOfChar  str)))
+
+(defun stream->linesOfChar (str &optional 
+                            (line (read-line str nil)))
+  (when line
+      (cons (coerce line 'list)
+            (stream->linesOfChar str))))
+
 (defparameter *tests* nil)
 
 (defmacro deftest (name params  &body body)
