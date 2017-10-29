@@ -2,7 +2,7 @@
   (defstruct num name pos (n 0) (mu 0) (m2 0) (id (incf n)))
   (defstruct sym name pos (id (incf n))))
 
-(defmethd + ((i num) y)
+(defmethod add ((i num) y)
   (with-slots (n mu m2) i
     (incf n)))
     
