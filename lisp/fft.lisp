@@ -1,3 +1,10 @@
+; # Head
+; 
+; Text to get is starated
+#|
+Here some more
+|#
+
 (let ((n 0))
   (defstruct num name pos (n 0) (mu 0) (m2 0) (id (incf n)))
   (defstruct sym name pos (id (incf n))))
@@ -17,10 +24,17 @@
            (less)
            (more))
 
+; # More Test
+;
+; and more
+; asas
+
 ;(defmethod print-object ((x tbl) str)
  ; "Change the print method for a hash."
   ;(format str "(tbl ~a)" (length (tbl-rows x))))
 
+                                        ; # FFT
+; Stuff to tell
 (defun deftable1 (name cols rows)
   (let ((tb (make-tbl :name name :cols cols)))
     (doitems (col pos cols tb)
