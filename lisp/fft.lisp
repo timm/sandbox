@@ -4,6 +4,40 @@
 #|
 Here some more
 |#
+(defthing col
+  (txt "") (pos 0) (n 0) (w 1))
+
+
+
+(defmethod add ((x col) y)
+  (when (not (eql y #\?))
+    (incf (slot-value x) 'n)
+    (add1 y)
+    y))
+
+(defmethod adds ((x col) ys) (dolist (y ys y) (add y)))
+
+(defmethod norm ((x col) y)
+  (if (eql y #\?)
+      y
+    (norm1 x y)))
+
+(defklass num col
+  (mu 0) (m2 0)
+  (lo most-positive-fixnum)
+  (hi most-negative-fixnum))
+
+(defmethod add1 ((x num) y)
+  (with-slots  (hi lo n mu m2) x
+    (let ((delta (- y mu)))
+      (setf lo (min lo y)
+            hi (max hi y)
+            mu (+ mu (/ delta n))
+            m2 (+ m2 (* delta (- x mu))))
+      (if (> n 1)
+          (setf sd (/ m2 (- n 1)))))))
+          
+
 
 (let ((n 0))
   (defstruct num name pos (n 0) (mu 0) (m2 0) (id (incf n)))

@@ -59,7 +59,12 @@
     :initform ,form
     :accessor ,name))
 
-(defmacro defklass (name slot-descriptions)
+(defmacro defthing  (name &rest slot-descriptions)
   `(defclass ,name ()
+     ,(loop for (slot-name form) in slot-descriptions
+         collect (make-accessor-field slot-name form))))
+
+(defmacro defklass (name parent &rest slot-descriptions)
+  `(defclass ,name (,parent)
      ,(loop for (slot-name form) in slot-descriptions
          collect (make-accessor-field slot-name form))))
