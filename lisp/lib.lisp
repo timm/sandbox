@@ -17,7 +17,18 @@
 
 (defmacro slots (obj &rest names)
   `(mapcar #'(lambda (name) (cons name (slot-value ,obj name))) ',names))
-  
+
+; need to make sins different
+(defun msubs (lst m)
+  (if (< (length lst) (* 2 m))
+      (list lst)
+      (let ((tmp)
+            (n m))
+        (while (>= (decf n) 0)
+          (push (pop lst) tmp))
+        (cons (reverse tmp)
+              (msubs lst m)))))
+    
 (defun round-to (number precision &optional (what #'round))
     (let ((div (expt 10 precision)))
       (float (/ (funcall what (* number div)) div))))
