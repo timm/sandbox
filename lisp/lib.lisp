@@ -18,27 +18,33 @@
 (defmacro slots (obj &rest names)
   `(mapcar #'(lambda (name) (cons name (slot-value ,obj name))) ',names))
 
-; (msubs '(1 2 3 4 4 5 5 5 5 5 8 9 0 10 11 12 13 14 16 17 18) 3)
+; (msubs '(1 2 3 4 4 5 5 5 5 5 8 9 0 10 11 12 13 14 16 17 18) 3 10)
 ; need to make sins different
-(defun msubs (lst &optional (m 20) (f #'identity))
+(defun msubs (lst &optional (m 20) (epsilon 0) (f #'identity))
   (msubs1 (sort lst #'(lambda (a b)
                         (< (funcall f a)  (funcall f b))))
-          m f))
+          m epsilon f))
 
-(defun msubs1 (lst m f) 
+(defun msubs1 (lst m epsilon f) 
   (let ((tmp)
-        (n m))
-    (while (and (>= (decf n) 0) lst)
+        (first (car lst))
+        (counter m))
+    (while ; pop m items items
+        (and (>= (decf counter) 0) lst)
       (push (pop lst) tmp))
-    (while (and lst
-                (eql (funcall f (car tmp))
-                     (funcall f (car lst))))
+    (while 
+        (let ((first   (funcall f first))
+              (current (funcall f (car tmp)))
+              (next    (funcall f (car lst))))
+          (or
+           (< (- current first) epsilon)
+           (eql current next)))
       (push (pop lst) tmp))
     (cond  ((< (length lst) m) (while lst
                                  (push (pop lst) tmp))
                                (list tmp))
            (t  (cons tmp
-                     (msubs1 lst m f))))))
+                     (msubs1 lst m epsilon f))))))
     
 (defun round-to (number precision &optional (what #'round))
     (let ((div (expt 10 precision)))
