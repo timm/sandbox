@@ -1,9 +1,14 @@
 (defparameter *tests* nil)
 
-(defmacro deftest (name params  &body body)
+(defmacro deftest (name params  doc &body body)
   "Create a defun, adding it name to the list of *tests*."
-  `(progn (unless (member ',name *tests*) (push ',name *tests*))
-      (defun ,name ,params ,@body)))
+  (let ((s "----------------------------"))
+    `(progn
+       (unless (member ',name *tests*) (push ',name *tests*))
+       (defun ,name ,params ,doc
+              (format t "~&; ----| ~a |~a~%" ',name ,s )
+              (format t "; ~a~%" ,doc)
+              ,@body))))
 
 (let ((pass 0)  
       (fail 0)) 

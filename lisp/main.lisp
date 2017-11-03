@@ -5,10 +5,10 @@
       (handler-bind
           ((style-warning #'muffle-warning))
         (dolist (want wants 'LITHP-ITH-LITHTENING)
-          (format t ";loading ~a ...~%" want)
+          (format t ".")
           (load want)))))
   
   (ith "deftest"
-       "lib"
+       "lib")
        "fft")
 )

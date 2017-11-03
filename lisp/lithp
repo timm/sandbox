@@ -3,7 +3,6 @@ exec /usr/local/bin/sbcl  --noinform --load $0 --end-toplevel-options "$@"
 
 |#
 
-(print 22)
 
 (defun lithp-hi ()
   "as required by http://goo.gl/PWqZP, print historic LISP greeting"
@@ -29,7 +28,7 @@ exec /usr/local/bin/sbcl  --noinform --load $0 --end-toplevel-options "$@"
 
 (defun lithp-run-command-line (argv)
   "just symbols & keywords & numbers (not strings or lists)"
-  (print argv)
+  ;(print argv)
   (let* ((main (and argv (pop argv)))
          (com  (and argv (mapcar 'read-from-string argv)))
          (fn   (and com (car com)))
@@ -37,8 +36,8 @@ exec /usr/local/bin/sbcl  --noinform --load $0 --end-toplevel-options "$@"
     (if main
         (lithp-non-verbose-load main))
     (if fn
-        (format t "~&~a~%" (apply fn args)))))
+        (format t "~a~%" (apply fn args)))))
 
-(lithp-hi)
+;(lithp-hi)
 (lithp-run-command-line (cdr (lithp-command-line)))
 (quit)

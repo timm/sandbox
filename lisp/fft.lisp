@@ -80,6 +80,11 @@ Here some more
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; num
 
+(defthing num col
+  (mu 0) (m2 0) (sd 0)
+  (lo most-positive-fixnum)
+  (hi most-negative-fixnum))
+
 (defmethod add1 ((x num) y)
   (with-slots (hi lo n mu m2 sd) x
     (let ((delta (- y mu)))
@@ -89,11 +94,6 @@ Here some more
              m2 (+ m2 (* delta (- y mu))))
       (if (> n 1)
           (setf sd (sqrt (/ m2 (- n 1))))))))
-
-(defthing num col
-  (mu 0) (m2 0) (sd 0)
-  (lo most-positive-fixnum)
-  (hi most-negative-fixnum)) 
 
 (defmacro copier (old new &rest fields)
   `(with-slots ,fields ,old
@@ -132,37 +132,46 @@ Here some more
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; deftable
 
+(defthing  cols thing
+  (all) (nums) (syms))
+
+(defthing table thing
+  (xy (make-instance 'cols))
+  (x  (make-instance 'cols))
+  (y  (make-instance 'cols)))
+  
 (defun deftable1 (name cols rows)
-  (let ((tb (make-tbl :name name :cols cols)))
+  (let ((tb (make-instance 'tbl :name name :cols cols)))
     (doitems (col pos cols tb)
       (defcol tb col pos))))
 
 (defmacro deftable (name (&rest cols) &body rows)
   `(deftable1 ',name ',cols ',rows))
 
-(defun defcol (tb name pos &aux (num #'make-num) (sym #'make-sym))
+(defun defcol (tb name pos)
   (labels
-      ((doit (maker list-of-slots)
-         (let ((col (funcall maker :name name :pos pos)))
-           (dolist (slots list-of-slots)
-             (change
-              (lambda (slot) (cons col slot))
-              tb slots)))))
-    (case
+   ((num () (make-instance 'num :name name :pos pos))
+    (sym () (make-instance 'sym :name name :pos pos))
+    (doit (col list-of-slots)
+          (dolist (slots list-of-slots)
+            (change
+             (lambda (slot) (cons col slot))
+             tb slots))))
+   (case
         (char (symbol-name name) 0)
-      (#\> (doit num '((xy all) (xy nums) (y all) (y nums) (more)   )))
-      (#\< (doit num '((xy all) (xy nums) (y all) (y nums) (less)   )))
-      (#\$ (doit num '((xy all) (xy nums) (x all) (x nums)          )))
-      (#\! (doit sym '((xy all) (xy syms) (y all) (y syms) (klasses))))
-      (t (doit sym '((xy all) (xy syms) (x all) (x syms)       ))))))
+      (#\> (doit (num) '((xy all) (xy nums) (y all) (y nums) (more)   )))
+      (#\< (doit (num) '((xy all) (xy nums) (y all) (y nums) (less)   )))
+      (#\$ (doit (num) '((xy all) (xy nums) (x all) (x nums)          )))
+      (#\! (doit (sym) '((xy all) (xy syms) (y all) (y syms) (klasses))))
+      (t   (doit (sym) '((xy all) (xy syms) (x all) (x syms)       ))))))
 
-(deftest col1 ()
-  (let ((tb (make-tbl)))
-    (print (defcol tb '$x 0))
-    tb))
+;(deftest col1 ()
+ ; (let ((tb (make-tbl)))
+  ; (print (defcol tb '$x 0))
+   ; tb))
 
 (deftest defcol? ()
-  (let* ((tb   (make-tbl))
+  (let* ((tb   (make-instance 'table))
          (eg  `((aa    $bb $cc dd !ee)
                 (sunny 85 85 FALSE no)
                 (sunny 80 90 TRUE no)
