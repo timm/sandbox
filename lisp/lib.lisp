@@ -18,42 +18,6 @@
 (defmacro slots (obj &rest names)
   `(mapcar #'(lambda (name) (cons name (slot-value ,obj name))) ',names))
 
-(defun msubs1 (lst m epsilon f) 
-  (let ((tmp)
-        (first (car lst))
-        (counter m))
-    (while ; pop m items items
-        (and (>= (decf counter) 0) lst)
-      (push (pop lst) tmp))
-    (while 
-        (let ((first   (funcall f first))
-              (current (funcall f (car tmp)))
-              (next    (funcall f (car lst))))
-          (or
-           (< (- current first) epsilon)
-           (eql current next)))
-      (push (pop lst) tmp))
-    (cond  ((< (length lst) m) (while lst
-                                 (push (pop lst) tmp))
-                               (list tmp))
-           (t  (cons tmp
-                     (msubs1 lst m epsilon f))))))
-
-(defun msubs (lst &optional (m 20) (epsilon 0) (f #'identity))
-  (msubs1 (sort lst #'(lambda (a b)
-                        (< (funcall f a)  (funcall f b))))
-          m epsilon f))
-
-(deftest msubs3! ()
-  "Expect 3 lists"
-  (let* ((lst '(10 20 30 11 21 31 12 22
-                32 13 23 33 14 24 34))
-         (l5   (msubs lst 5))
-         (l3   (msubs lst 3)))
-    (print `(l5 ,l5))
-    (print `(l3 ,l3))
-    (test (length l5) 3)
-    (test (length l3) 5)))
 
 (defun round-to (number precision &optional (what #'round))
     (let ((div (expt 10 precision)))

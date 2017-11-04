@@ -7,8 +7,11 @@
         (dolist (want wants 'LITHP-ITH-LITHTENING)
           (format t ".")
           (load want)))))
-  
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   (ith "deftest"
-       "lib")
-       "fft")
-)
+       "lib"
+       "div"
+       "fft"
+       )
+  )
+
