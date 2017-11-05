@@ -68,47 +68,46 @@
       (push (copy sofar) out))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun superranges1 (arr f epsilon &aux (rank 0) )
+(defun superranges1 (arr f epsilon &aux (out) )
   "split array at point that minimized expected value of sd"
   (macrolet ((at (n v) `(slot-value (aref arr ,n) ,v)))
     (labels
-        ((sd  (b4 z)  (* (/ (at z 'n) (at b4 'z))
-                         (at z 'sd)))
-         (all (lo hi) (let ((out (make-instance 'num)))
-                        (loop for j from lo to hi do
-                             (adds out (aref arr j) f)
-                           return out)))
-         (argmin (lo hi least &aux out)
-           (let ((b4 (all lo hi))
-                 (least most-positive-fixnum))
-             (loop for j from lo to (1- hi) do
-                  (let* ((l   (all 0      j))
-                         (r   (all (1+ j) hi))
-                         (now (+ (sd b4 l) (sd b4 r))))
-                    (if (< now least)
-                        (if (> (- (at r 'mu) (at l 'mu))
-                               epsilon)
-                            (setf least now
-                                  out   j))))
-                return out)))
-         (split (hi lo)
-           (let ((cut (argmin lo hi)))
-             (cond (cut (split 0        cut)
-                        (split (1+ cut)  hi))
-                   (t   (incf rank)
-                        (loop for j from lo to hi do
-                             (setf (at j 'rank) rank))))))) ;; error no place to store in lists
-      (split 0 (1- length arr)))))
+        ((sd  (b4 z)
+           (* (at z 'sd)
+              (/ (at z 'n) (at b4 'z))))                        
+         (all (lo hi &aux (out (make-instance 'num)))
+             (loop for j from lo to hi do
+                  (adds out (aref arr j) f)
+                return out))
+         (argmin (lo hi &aux cut (best most-positive-fixnum))
+           (if (< lo hi)
+               (let ((b4 (all lo hi)))
+                 (loop for j from lo to (1- hi) do
+                      (let* ((l   (all 0      j))
+                             (r   (all (1+ j) hi))
+                             (now (+ (sd b4 l) (sd b4 r))))
+                        (if (< now best)
+                            (if (> (- (at r 'mu) (at l 'mu))
+                                   epsilon)
+                                (setf best now
+                                      cut   j)))))))
+           cut)
+         (split (hi lo &aux (cut (argmin lo hi)))
+           (cond (cut  (split 0        cut)
+                       (split (1+ cut)  hi))
+                 (t    (push (subseq arr lo hi) out)))))
+      (split 0 (1- length arr))
+      out)))
 
 (defun superranges (lst &key (n 20) (xepsilon 0) (cohen 0.2)
                           (x #'first) (y #'second))
-  "Split x-values in ranges; combine ranges that do not alter y"
+  "Split x-values in ranges; combine ranges that do not alter y.
+   Returns an array of array of numbers"
   (let* ((arr      (l->a
                     (ranges lst :n n :epsilon xepsilon :f x)))
          (yepsilon (* cohen
                       (slot-value (num* lst y) 'sd))))
-    (superranges1 arr y yepsilon)
-    arr))
+    (superranges1 arr y yepsilon)))
 
 (deftest superranges! ()
   "Want 3, then 5,  lists"
