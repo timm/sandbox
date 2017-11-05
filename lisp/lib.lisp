@@ -27,6 +27,11 @@
 
 (defun r0 (n) (round-to n 0))
 
+(defun l->a (lst)
+  (make-array (length lst) :initial-contents lst))
+
+
+   
 ;;;; Simple access/update to recursive slots in LISP
 ;;;; Tested on defstructs. Should also work on instances.
 ;;;; Tim@menzies.us, Oct 2017 

@@ -11,10 +11,12 @@ Here some more
 (defthing col thing
   (txt "") (pos 0) (n 0) (w 1))
  
-(defmethod add1((x col) y)
+(defmethod add1((x col) y &optional f)
+  (declare (ignore x y f))
   (assert nil () "add1 should be implemented by subclass"))
 
 (defmethod norm1((x col) y)
+  (declare (ignore x y))
   (assert nil () "norm1 should be implemented by subclass"))
 
 ;; vvariance(samples):
@@ -29,16 +31,21 @@ Here some more
 
 
 
-(defmethod add ((x col) y)
+(defmethod add ((x col) y &optional (f #'identity))
   (with-slots (n) x
     (when (not (eql y #\?))
       (incf n)
-      (add1 x y))
+      (add1 (funcall f x) y ))
     y))
 
-(defmethod adds ((x col) ys)
-  (dolist (y ys x) (add x y)))
+(defmethod adds ((x col) (ys cons) &optional (f #'identity))
+  (dolist (y ys x)
+    (add x y f)))
 
+(defmethod adds ((x col) (ys simple-vector) &optional (f #'identity))
+  (loop for y across ys do 
+        (add x y f)))
+  
 (defmethod norm ((x col) y)
   (if (eql y #\?) y (norm1 x y)))
 
@@ -46,19 +53,23 @@ Here some more
 ;;;; num
 
 (defthing num col
-  (mu 0) (m2 0) (sd 0)
+  (mu 0) (m2 0) (sd 0) (rank 0)
   (lo most-positive-fixnum)
   (hi most-negative-fixnum))
 
-(defmethod add1 ((x num) y)
+(defmethod add1 ((x num) y &optional (f #'identity))
   (with-slots (hi lo n mu m2 sd) x
-    (let ((delta (- y mu)))
+    (let* ((y     (funcall f y))
+           (delta (- y mu)))
       (setf lo (min lo y)
-             hi (max hi y)
-             mu (+ mu (/ delta n))
-             m2 (+ m2 (* delta (- y mu))))
+            hi (max hi y)
+            mu (+ mu (/ delta n))
+            m2 (+ m2 (* delta (- y mu))))
       (if (> n 1)
           (setf sd (sqrt (/ m2 (- n 1))))))))
+
+(defun num* (lst &optional (f #'identity))
+  (adds (make-instance 'num) lst f))
 
 (defmacro copier (old new &rest fields)
   `(with-slots ,fields ,old
