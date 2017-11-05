@@ -72,7 +72,8 @@
   "split array at point that minimized expected value of sd"
   (macrolet ((at (n v) `(slot-value (aref arr ,n) ,v)))
     (labels
-        ((sd  (b4 z)  (* (/ (at z 'n) (at b4 'z)) (at z 'sd)))
+        ((sd  (b4 z)  (* (/ (at z 'n) (at b4 'z))
+                         (at z 'sd)))
          (all (lo hi) (let ((out (make-instance 'num)))
                         (loop for j from lo to hi do
                              (adds out (aref arr j) f)
@@ -92,11 +93,11 @@
                 return out)))
          (split (hi lo)
            (let ((cut (argmin lo hi)))
-             (cond (cut  (split 0        cut)
-                         (split (1+ cut)  hi))
-                   (t    (incf rank)
-                         (loop for j from lo to hi do
-                              (setf (at j 'rank) rank))))))) ;; error no place to store in lists
+             (cond (cut (split 0        cut)
+                        (split (1+ cut)  hi))
+                   (t   (incf rank)
+                        (loop for j from lo to hi do
+                             (setf (at j 'rank) rank))))))) ;; error no place to store in lists
       (split 0 (1- length arr)))))
 
 (defun superranges (lst &key (n 20) (xepsilon 0) (cohen 0.2)
