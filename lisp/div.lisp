@@ -96,7 +96,7 @@
            (cond (cut  (split 0        cut)
                        (split (1+ cut)  hi))
                  (t    (push (subseq arr lo hi) out)))))
-      (split 0 (1- length arr))
+      (split 0 (1- (length arr)))
       out)))
 
 (defun superranges (lst &key (n 20) (xepsilon 0) (cohen 0.2)
