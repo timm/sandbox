@@ -1,0 +1,10 @@
+(when (not (fboundp 'reload))
+  (let (seen)
+    (format t "; reload~%") 
+    (defun reload (f)
+      (when (not (member f seen))
+        (push f seen)
+         (handler-bind
+             ((style-warning #'muffle-warning))
+           (format t "; ~a~%" f)
+           (load f))))))
