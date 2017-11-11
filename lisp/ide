@@ -1,3 +1,5 @@
+# -*- mode:sh; -*-
+
 Dir="/tmp/$USER/lisp"
 Dot="$Dir/dotbashrc"
 
@@ -17,6 +19,9 @@ gitting() {
         git config --global credential.helper cache
         git config credential.helper 'cache --timeout=3600'
 }
+reload() {
+  . "$Dot"
+}
 
 alias e="open -a /Applications/Emacs.app "
 alias g="git status; git commit -am updated; git push"
@@ -24,8 +29,6 @@ alias ls="ls -G"
 
 export PROMPT_COMMAND='echo  -ne "LISP101:\033]0;/$(here ../..)/$(here ..)/$(here .)\007";PS1="$(here ../..)/$(here ..)/$(here .) \!> "'
 EOF
-
-echo $Dot
 
 Dot="$Dot" bash --init-file $Dot  -i
 

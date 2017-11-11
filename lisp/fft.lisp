@@ -30,7 +30,6 @@ Here some more
 ;; return S/(N-1)
 
 
-
 (defmethod add ((x col) y &optional (f #'identity))
   (with-slots (n) x
     (when (not (eql y #\?))
