@@ -1,0 +1,32 @@
+Dir="/tmp/$USER/lisp"
+Dot="$Dir/dotbashrc"
+
+mkdir -p $Dir
+
+cat<<'EOF'>$Dot
+
+here() { 
+	cd $1; basename $PWD 
+}
+timm() {
+   gitting "Tim Menzies" "tim@menzies.us"
+}
+gitting() {
+        git config user.name "$1"
+        git config user.email "$2"
+        git config --global credential.helper cache
+        git config credential.helper 'cache --timeout=3600'
+}
+
+alias e="open -a /Applications/Emacs.app "
+alias g="git status; git commit -am updated; git push"
+alias ls="ls -G"
+
+export PROMPT_COMMAND='echo  -ne "LISP101:\033]0;/$(here ../..)/$(here ..)/$(here .)\007";PS1="$(here ../..)/$(here ..)/$(here .) \!> "'
+EOF
+
+echo $Dot
+
+Dot="$Dot" bash --init-file $Dot  -i
+
+
