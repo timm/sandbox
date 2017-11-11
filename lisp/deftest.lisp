@@ -24,7 +24,7 @@
 	   (string= (whiteout (format nil "~(~a~)" x)) 
 		    (whiteout (format nil "~(~a~)" y)))))
       (cond ((samep want got) (incf pass)
-                              (format t "~&; yes"))
+                              (format t "!"))
 	    (t                (incf fail)
 			      (format t "~&; fail : expected ~a~%" want)))
       got))

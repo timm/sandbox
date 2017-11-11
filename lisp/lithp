@@ -36,9 +36,8 @@ exec /usr/local/bin/sbcl  --noinform --load $0 --end-toplevel-options "$@"
          (args (and com (cdr com))))
     (if main
         (lithp-non-verbose-load main))
-    (print fn)
     (if fn
-        (format t "~a~%" (apply fn args))
+        (apply fn args)
         (tests))))
 
 ;(lithp-hi)

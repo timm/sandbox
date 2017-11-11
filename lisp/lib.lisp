@@ -7,6 +7,8 @@
     "seeking 3 characters"
   (test (nchars 3 #\;) ";;;"))
 
+;;;;;;;;;;;;;;;;;;;;;;
+
 (defmacro doitems ((one n list &optional out) &body body )
   "Set 'one' and 'n' to each item in a list, and its position."
   `(let ((,n -1))
@@ -21,6 +23,8 @@
             (doitems (one n lst out)
                   (push (cons n one) out)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;
+
 (defmacro while (test &body body)
   `(do ()
        ((not ,test))
@@ -34,9 +38,10 @@
       (test '((aa . D) (aa . C) (aa . B) (aa . A))
             out)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defmacro slots (obj &rest names)
   `(mapcar #'(lambda (name) (cons name (slot-value ,obj name))) ',names))
-
 
 (defun round-to (number precision &optional (what #'round))
     (let ((div (expt 10 precision)))
@@ -46,10 +51,11 @@
 
 (defun r0 (n) (round-to n 0))
 
+(deftest r2! ()
+  (test 0.13 (r2 0.127456)))
+
 (defun l->a (lst)
   (make-array (length lst) :initial-contents lst))
-
-
    
 ;;;; Simple access/update to recursive slots in LISP
 ;;;; Tested on defstructs. Should also work on instances.
@@ -64,7 +70,7 @@
       (setf (slot-value obj (car slots))
             (funcall f (slot-value obj (car slots))))))
 
-(defmacro with-change ((slot obj &rest slots) &rest body)
+(defmacro with-place ((slot obj &rest slots) &rest body)
   `(change #'(lambda (,slot) ,@body)
             ,obj ',slots))
 
@@ -88,13 +94,12 @@
     (incf (? tmp  x3 y3 z2) 100)
     (dotimes (i 5)
       (push (+ 100 (* 100 i))  (? tmp x3 y3 z3)))
-    (with-change (slot  tmp x3 y3 z2)
+    (with-place (slot tmp x3 y3 z2)
       (+ 21 slot))
-    (with-change (slot tmp x3 y3 z3)
+    (with-place (slot tmp x3 y3 z3)
       (cons 5555 slot))
-    (print (? tmp x3 y3 z3))
-    (print (? tmp x3 y3 z2))
-    tmp))
+    (test '(5555 500 400 300 200 100) (? tmp x3 y3 z3))
+    (test 121 (? tmp x3 y3 z2))))
 
 (defun defslot  (name form)
   `(,name
@@ -104,15 +109,22 @@
 
 (defclass thing () ())
 
-(defmacro  defthing (x parent &rest slots)
+(defmacro defthing (x parent &rest slots)
   `(defclass ,x (,parent)
      ,(loop for (x form) in slots collect (defslot x form))))
+
+(defthing athing thing (a 1) (b 2))
+
+(deftest athing! ()
+    (let ((x (make-instance 'athing)))
+      (setf (? x a) 2000)
+      (test 2000 (? x a))))
 
 (let* ((seed0      10013)
        (seed       seed0)
        (multiplier 16807.0d0)
        (modulus    2147483647.0d0))
-  (defun reset-seed ()  (setf seed seed0))
+  (defun reset-seed (&optional (n seed0))  (setf seed n))
   (defun randf      (&optional (n 1)) (* n (- 1.0d0 (park-miller-randomizer))))
   (defun randi      (&optional (n 1)) (floor (* n (/ (randf 1000.0) 1000))))
   (defun park-miller-randomizer ()
@@ -121,3 +133,10 @@
     (/ seed modulus))
 )
 
+(deftest randf! ()
+  (let (one two)
+    (reset-seed)
+    (setf one (round-to (randf) 5))
+    (reset-seed)
+    (setf two  (round-to (randf) 5))
+    (test one two)))
