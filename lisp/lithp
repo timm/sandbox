@@ -3,6 +3,7 @@ exec /usr/local/bin/sbcl  --noinform --load $0 --end-toplevel-options "$@"
 
 |#
 
+(load "deftest")
 
 (defun lithp-hi ()
   "as required by http://goo.gl/PWqZP, print historic LISP greeting"
@@ -20,7 +21,7 @@ exec /usr/local/bin/sbcl  --noinform --load $0 --end-toplevel-options "$@"
   #+allegro (sys:command-line-arguments)
   #+lispworks sys:*line-arguments-list*
   )
-
+  
 (defun lithp-non-verbose-load (file)
   "suppress silly sbcl warnings"
   (handler-bind ((style-warning #'muffle-warning))
@@ -35,8 +36,10 @@ exec /usr/local/bin/sbcl  --noinform --load $0 --end-toplevel-options "$@"
          (args (and com (cdr com))))
     (if main
         (lithp-non-verbose-load main))
+    (print fn)
     (if fn
-        (format t "~a~%" (apply fn args)))))
+        (format t "~a~%" (apply fn args))
+        (tests))))
 
 ;(lithp-hi)
 (lithp-run-command-line (cdr (lithp-command-line)))

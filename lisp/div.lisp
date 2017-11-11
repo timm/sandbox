@@ -109,7 +109,7 @@
                       (slot-value (num* lst y) 'sd))))
     (superranges1 arr y yepsilon)))
 
-(deftest superranges! ()
+(defun superranges! ()
   "Want 3, then 5,  lists"
   (let* ((lst '(10 20 30 11 21 31 12 22
                 32 13 23 33 14 24 34))

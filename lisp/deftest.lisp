@@ -23,7 +23,8 @@
 	 (samep (x y) ; true if strings of x&y, sans whitespace, are the same
 	   (string= (whiteout (format nil "~(~a~)" x)) 
 		    (whiteout (format nil "~(~a~)" y)))))
-      (cond ((samep want got) (incf pass))
+      (cond ((samep want got) (incf pass)
+                              (format t "~&; yes"))
 	    (t                (incf fail)
 			      (format t "~&; fail : expected ~a~%" want)))
       got))

@@ -3,6 +3,10 @@
     (dotimes (i n)
       (format s "~a" c))))
 
+(deftest chars! ()
+    "seeking 3 characters"
+  (test (nchars 3 #\;) ";;;"))
+
 (defmacro doitems ((one n list &optional out) &body body )
   "Set 'one' and 'n' to each item in a list, and its position."
   `(let ((,n -1))
@@ -10,10 +14,25 @@
        (incf ,n)
        ,@body)))
 
+(deftest doitems! ()
+    (let* ((out)
+           (lst '(a b c d)))
+      (test '((3 . D) (2 . C) (1 . B) (0 . A))
+            (doitems (one n lst out)
+                  (push (cons n one) out)))))
+
 (defmacro while (test &body body)
   `(do ()
        ((not ,test))
      ,@body))
+
+(deftest while! ()
+    (let* ((out)
+           (lst '(a b c d)))
+      (while lst
+        (push (cons 'aa (pop lst)) out))
+      (test '((aa . D) (aa . C) (aa . B) (aa . A))
+            out)))
 
 (defmacro slots (obj &rest names)
   `(mapcar #'(lambda (name) (cons name (slot-value ,obj name))) ',names))
@@ -45,8 +64,8 @@
       (setf (slot-value obj (car slots))
             (funcall f (slot-value obj (car slots))))))
 
-(defmacro dochange ((slot obj &rest slots) &rest body)
-  `(changex #'(lambda (,slot) ,@body)
+(defmacro with-change ((slot obj &rest slots) &rest body)
+  `(change #'(lambda (,slot) ,@body)
             ,obj ',slots))
 
 (defmacro ? (obj first-slot &rest more-slots)
@@ -69,14 +88,13 @@
     (incf (? tmp  x3 y3 z2) 100)
     (dotimes (i 5)
       (push (+ 100 (* 100 i))  (? tmp x3 y3 z3)))
-    (change (lambda (slot) (1+ slot))
-       tmp '(x3 y3 z2))
-    (change (lambda (slot) (cons 5555 slot))
-       tmp '(x3 y3 z3))
+    (with-change (slot  tmp x3 y3 z2)
+      (+ 21 slot))
+    (with-change (slot tmp x3 y3 z3)
+      (cons 5555 slot))
     (print (? tmp x3 y3 z3))
     (print (? tmp x3 y3 z2))
     tmp))
-
 
 (defun defslot  (name form)
   `(,name

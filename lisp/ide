@@ -2,11 +2,15 @@
 
 Dir="/tmp/$USER/lisp"
 Dot="$Dir/dotbashrc"
+Here=$PWD
 
 mkdir -p $Dir
 
 cat<<'EOF'>$Dot
 
+lithp() {
+  bash $Here/lithp $*  
+}
 here() { 
 	cd $1; basename $PWD 
 }
@@ -30,6 +34,6 @@ alias ls="ls -G"
 export PROMPT_COMMAND='echo  -ne "LISP101:\033]0;/$(here ../..)/$(here ..)/$(here .)\007";PS1="$(here ../..)/$(here ..)/$(here .) \!> "'
 EOF
 
-Dot="$Dot" bash --init-file $Dot  -i
+Here="$Here" Dot="$Dot" bash --init-file $Dot  -i
 
 
