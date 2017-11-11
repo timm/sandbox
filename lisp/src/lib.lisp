@@ -1,14 +1,13 @@
+(load "../src/boot")
+
+
+;;;; strings
 (defun nchars (&optional (n 40) (c #\Space))
   (with-output-to-string (s)
     (dotimes (i n)
       (format s "~a" c))))
 
-(deftest chars! ()
-    "seeking 3 characters"
-  (test (nchars 3 #\;) ";;;"))
-
-;;;;;;;;;;;;;;;;;;;;;;
-
+;;;; macros
 (defmacro doitems ((one n list &optional out) &body body )
   "Set 'one' and 'n' to each item in a list, and its position."
   `(let ((,n -1))
@@ -16,33 +15,16 @@
        (incf ,n)
        ,@body)))
 
-(deftest doitems! ()
-    (let* ((out)
-           (lst '(a b c d)))
-      (test '((3 . D) (2 . C) (1 . B) (0 . A))
-            (doitems (one n lst out)
-                  (push (cons n one) out)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;
-
 (defmacro while (test &body body)
   `(do ()
        ((not ,test))
      ,@body))
 
-(deftest while! ()
-    (let* ((out)
-           (lst '(a b c d)))
-      (while lst
-        (push (cons 'aa (pop lst)) out))
-      (test '((aa . D) (aa . C) (aa . B) (aa . A))
-            out)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;;;
 (defmacro slots (obj &rest names)
   `(mapcar #'(lambda (name) (cons name (slot-value ,obj name))) ',names))
 
+;;;; maths
 (defun round-to (number precision &optional (what #'round))
     (let ((div (expt 10 precision)))
       (float (/ (funcall what (* number div)) div))))
@@ -51,16 +33,14 @@
 
 (defun r0 (n) (round-to n 0))
 
-(deftest r2! ()
-  (test 0.13 (r2 0.127456)))
-
+;;;; conversion
 (defun l->a (lst)
   (make-array (length lst) :initial-contents lst))
    
 ;;;; Simple access/update to recursive slots in LISP
-;;;; Tested on defstructs. Should also work on instances.
-;;;; Tim@menzies.us, Oct 2017 
-;;;; Builds on some excellent code from "Barmar", https://goo.gl/SQtNHd
+;; Tested on defstructs. Should also work on instances.
+;; Tim@menzies.us, Oct 2017 
+;; Builds on some excellent code from "Barmar", https://goo.gl/SQtNHd
 (defun change (f obj slots)
   "Use case 1: access path for slots not known till runtime.
    In this case, pass in a function 'f' that will be used to
@@ -82,24 +62,6 @@
       `(slot-value ,obj ',first-slot)
       `(? (slot-value ,obj ',first-slot) ,@more-slots)))
 
-;;; Test code
-
-;; "(make-xxxx)" creates a recursive set of structs.
-(defstruct zzzz z1 (z2 0) (z3))
-(defstruct yyyy y1 y2 (y3 (make-zzzz)))
-(defstruct xxxx x1 x2 (x3 (make-yyyy)))
-
-(defun xyz-demo ()
-  (let ((tmp (make-xxxx)))
-    (incf (? tmp  x3 y3 z2) 100)
-    (dotimes (i 5)
-      (push (+ 100 (* 100 i))  (? tmp x3 y3 z3)))
-    (with-place (slot tmp x3 y3 z2)
-      (+ 21 slot))
-    (with-place (slot tmp x3 y3 z3)
-      (cons 5555 slot))
-    (test '(5555 500 400 300 200 100) (? tmp x3 y3 z3))
-    (test 121 (? tmp x3 y3 z2))))
 
 (defun defslot  (name form)
   `(,name
@@ -113,12 +75,6 @@
   `(defclass ,x (,parent)
      ,(loop for (x form) in slots collect (defslot x form))))
 
-(defthing athing thing (a 1) (b 2))
-
-(deftest athing! ()
-    (let ((x (make-instance 'athing)))
-      (setf (? x a) 2000)
-      (test 2000 (? x a))))
 
 (let* ((seed0      10013)
        (seed       seed0)
@@ -133,10 +89,4 @@
     (/ seed modulus))
 )
 
-(deftest randf! ()
-  (let (one two)
-    (reset-seed)
-    (setf one (round-to (randf) 5))
-    (reset-seed)
-    (setf two  (round-to (randf) 5))
-    (test one two)))
+(/ 1 0)

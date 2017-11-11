@@ -1,0 +1,68 @@
+# -*- mode:sh; -*-
+
+Dir="/tmp/$USER/lisp"
+Dot="$Dir/dotbashrc"
+Here=$PWD
+Sbcl=/usr/local/bin/sbcl
+
+mkdir -p $Dir
+
+cat<<'EOF'>$Dot
+
+install() {
+  sudo npm install -g docco
+  brew install sbcl # sbcl > 1.2
+  brew install gawk
+  brew tap d12frosted/emacs-plus
+  brew install emacs-plus
+  brew linkapps emacs-plus
+
+  if [ -d "$HOME/.emacs.d" ]; then
+    echo "No fresh super-emacs unless you first  delete $HOME/.emacs.d"
+  fi
+  if [ ! -d "$HOME/.emacs.d" ]; then
+     mkdir -p $HOME/tmp/super-emacs
+     cd $HOME/tmp/super-emacs
+     git clone https://github.com/myTerminal/super-emacs
+     mv super-emacs/.emacs.d ~/
+     echo "now edit $HOME/.emacs.d/init.el to load etc/timmacs.el"
+  fi
+}
+ok() {
+   local here=$PWD
+   cd $Here/test
+   time $Sbcl  --noinform         \
+          --disable-debugger  \
+          --load ${1}ok.lisp   \
+          --eval "(progn (tests) (exit))" 2>&1 | tee -a some_file  | gawk '/^Backtrace for/ { exit } 1'
+   cd $here
+}
+here() { 
+	cd $1; basename $PWD 
+}
+timm() {
+   gitting "Tim Menzies" "tim@menzies.us"
+}
+gitting() {
+        git config user.name "$1"
+        git config user.email "$2"
+        git config --global credential.helper cache
+        git config credential.helper 'cache --timeout=3600'
+}
+reload() {
+  . "$Dot"
+}
+
+alias e="open -a /Applications/Emacs.app "
+alias g="git status; git commit -am updated; git push"
+alias ls="ls -G"
+
+export PROMPT_COMMAND='echo  -ne "LISP101:\033]0;/$(here ../..)/$(here ..)/$(here .)\007";PS1="$(here ../..)/$(here ..)/$(here .) \!> "'
+EOF
+
+Sbcl="$Sbcl" \
+Here="$Here"  \
+Dot="$Dot"     \
+bash --init-file $Dot  -i
+
+
