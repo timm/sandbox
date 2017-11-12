@@ -21,9 +21,15 @@
      ,@body))
 
 ;;;;
-(defmacro slots (obj &rest names)
+(defmacro xslots (obj &rest names)
   `(mapcar #'(lambda (name) (cons name (slot-value ,obj name))) ',names))
 
+(defmacro copier (old new &rest fields)
+  `(with-slots ,fields ,old
+     ,@(mapcar #'(lambda (slot)
+                        `(setf (slot-value ,new ',slot) ,slot))
+               fields)
+     ,new))
 ;;;; maths
 (defun round-to (number precision &optional (what #'round))
     (let ((div (expt 10 precision)))
@@ -89,4 +95,3 @@
     (/ seed modulus))
 )
 
-(/ 1 0)

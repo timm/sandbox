@@ -2,10 +2,76 @@
 
 Dir="/tmp/$USER/lisp"
 Dot="$Dir/dotbashrc"
+Ignore="$Dir/gitignore"
 Here=$PWD
 Sbcl=/usr/local/bin/sbcl
 
 mkdir -p $Dir
+
+cat<<-'EOF'>$Ignore
+	-*- mode: gitignore; -*-
+	*.FASL
+	*.fasl
+	*.lisp-temp
+	*.dfsl
+	*.pfsl
+	*.d64fsl
+	*.p64fsl
+	*.lx64fsl
+	*.lx32fsl
+	*.dx64fsl
+	*.dx32fsl
+	*.fx64fsl
+	*.fx32fsl
+	*.sx64fsl
+	*.sx32fsl
+	*.wx64fsl
+	*.wx32fsl
+	*~
+	\#*\#
+	/.emacs.desktop
+	/.emacs.desktop.lock
+	*.elc
+	auto-save-list
+	tramp
+	.\#*
+
+	# Org-mode
+	.org-id-locations
+	*_archive
+
+	# flymake-mode
+	*_flymake.*
+
+	# eshell files
+	/eshell/history
+	/eshell/lastdir
+
+	# elpa packages
+	/elpa/
+
+	# reftex files
+	*.rel
+
+	# AUCTeX auto folder
+	/auto/
+
+	# cask packages
+	.cask/
+	dist/
+
+	# Flycheck
+	flycheck_*.el
+
+	# server auth directory
+	/server/
+
+	# projectiles files
+	.projectile
+
+	# directory configuration
+	.dir-locals.el
+EOF
 
 cat<<'EOF'>$Dot
 
@@ -31,10 +97,18 @@ install() {
 ok() {
    local here=$PWD
    cd $Here/test
-   time $Sbcl  --noinform         \
+   echo ";;;; ../test/${1}ok"
+   time $Sbcl  --noinform   \
           --disable-debugger  \
-          --load ${1}ok.lisp   \
-          --eval "(progn (tests) (exit))" 2>&1 | tee -a some_file  | gawk '/^Backtrace for/ { exit } 1'
+          --eval "(progn (load \"../src/boot\")
+                         (reload \"../test/${1}ok\")
+                         (tests) 
+                         (exit))" 2>&1 | gawk '
+                     /^Backtrace for/ { m=1    } 
+                                      { n += m } 
+                              /n> 10/ { exit   } 
+                                      1'
+          #--eval "(progn (tests) (exit))" 2>&1 | tee -a some_file  | gawk '/^Backtrace for/ { exit } 1'
    cd $here
 }
 here() { 
@@ -59,6 +133,12 @@ alias ls="ls -G"
 
 export PROMPT_COMMAND='echo  -ne "LISP101:\033]0;/$(here ../..)/$(here ..)/$(here .)\007";PS1="$(here ../..)/$(here ..)/$(here .) \!> "'
 EOF
+########################
+
+if [ ! -f "$Here/.gitignore" ]; then
+	cp $Ignore $Here/.gitignore
+	git add $Here/.gitignore
+fi
 
 Sbcl="$Sbcl" \
 Here="$Here"  \
