@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+
+Awk=`which gawk`
+Here=$PWD
+Var=$Here/var
+Configs="$HOME/.erc ./_erc"
+FileHeader='# /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */'
+
+help() { ## # show options
+  printf "\nGOLD v.0.2\noptions:"
+  grep '{ ##' $0  | sort | $Awk '
+  BEGIN  {FS="[()]+[ ]*{.*#[ ]*"}
+  /grep/ { next}
+         { printf("    %-15s%s\n",$1,$2)}'
+}
+ok() {
+  $0 run $1
+}
+new() {
+  if [ ! -f "$1.awk" ]; then cat <<-EOF
+        $FileHeader
+        @include "e.awk"
+
+        # $1 : $2
+
+        EOF
+  fi
+  if [ ! -f "${1}ok.awk" ]; then cat <<-EOF
+        $FileHeader
+        @include "$1"
+
+        EOF
+  fi
+}
+_e2awk() {
+  $Awk '
+BEGIN {In=1}
+/^function / {
+   f= gensub(/function[ \t]+\([a-zA-Z0-9_]+\)\((.*$\)/,"\\1",1,$0) }
+
+/^[ \t]+isa\(/ {
+   print gensub(/\(.*\)isa.\(.*\)$/,"\\1isa(\" f \",\\2", 1, $0)  }
+
+gsub(/^\"\"\"/,"") { In =  1 - In  }
+                   { pre  = In ? "" : "# " }
+In {
+    print pre gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, "[\"\\1\\2\"]", "g", $0)
+    next }
+   {
+    print pre $0
+   }
+' -
+}
+gitignore() { ## # gitignore
+  if [ ! -f .gitignore ]; then cat <<-EOF > .gitignore
+/##
+        autocmd BufEnter * cd %:p:h
+        set showmatch
+        set matchtime=15
+        set background=light
+        set syntax=on
+        syntax enable
+        set ignorecase
+        set incsearch
+        set smartcase
+        set showmatch
+        set hlsearch
+        colorscheme slate
+        EOF
+  vim -u "$Var/vimrc" $*
+}
+run() { # runs a .e file
+  file=$1
+  Built="$Var/$file.awk"
+  shift
+  AWKPATH=$Var                              \
+      $Awk --profile="$Var/${file}.profile"   \
+           --dump-variables="$Var/${file}.vars" \
+           -f $Built "$@"
+  if [ -f "$Var/${file}.vars" ]; then
+    $Awk '/[A-Z][A-Z]/ {next} {print "W> rogue local: ",$0}' $Var/${file}.vars
+  fi
+}
+prep() { ##  # ensure all .e files have .awk version
+  for i in *.e; do
+    stem=$(basename "$i" ".e")
+    j="$Var/${stem}.awk"
+    if [ "$i" -nt "$j" ]; then
+      echo "# $i ==> $j"
+      cat "$i" | _e2awk > "$j"
+    fi
+  done
+}
+
+###################################
+# get all the configs (if any)
+
+for file in $configs; do
+  if [ -f "$file" ]; then
+    . $file ; fi; done
+
+for dir in $Var; do
+  mkdir -p $dir; done
+
+if [ -f "${1}.e" ]; then
+        run "$@"
+elif [ `type -t $1` == 'function' ]; then
+        f=$1
+        shift
+        $f "$@"
+else
+     help
+fi
+
