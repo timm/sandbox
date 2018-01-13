@@ -7,7 +7,7 @@ Configs="$HOME/.erc ./_erc"
 FileHeader='# /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */'
 
 help() { ## # show options
-  printf "\nGOLD v.0.2\noptions:"
+  printf "GOLD v.0.2\n\noptions:\n"
   grep '{ ##' $0  | sort | $Awk '
   BEGIN  {FS="[()]+[ ]*{.*#[ ]*"}
   /grep/ { next}
@@ -16,27 +16,29 @@ help() { ## # show options
 ok() {
   $0 run $1
 }
+
 new() {
-  if [ ! -f "$1.awk" ]; then cat <<-EOF
-        $FileHeader
-        @include "e.awk"
+  stem=$1
+  if [ ! -f "${stem}.e" ]; then cat <<-EOF > "${stem}.e"
+	$FileHeader
+	@include "e"
+	
+	# ${stem}.e 
 
-        # $1 : $2
-
-        EOF
+	EOF
   fi
-  if [ ! -f "${1}ok.awk" ]; then cat <<-EOF
-        $FileHeader
-        @include "$1"
-
-        EOF
+  if [ ! -f "${stem}ok.e" ]; then cat <<-EOF > "${stem}ok.e"
+	$FileHeader
+	@include "${stem}"
+	
+	EOF
   fi
 }
 _e2awk() {
   $Awk '
 BEGIN {In=1}
 /^function / {
-   f= gensub(/function[ \t]+\([a-zA-Z0-9_]+\)\((.*$\)/,"\\1",1,$0) }
+   f= gensub(/function[ \t]+\([a-zA-Z0-9_]+\)\(.*$\)/,"\\1",1,$0) }
 
 /^[ \t]+isa\(/ {
    print gensub(/\(.*\)isa.\(.*\)$/,"\\1isa(\" f \",\\2", 1, $0)  }
@@ -51,22 +53,52 @@ In {
    }
 ' -
 }
-gitignore() { ## # gitignore
+gitignore() { ## # add a gitignore statement
   if [ ! -f .gitignore ]; then cat <<-EOF > .gitignore
-/##
-        autocmd BufEnter * cd %:p:h
-        set showmatch
-        set matchtime=15
-        set background=light
-        set syntax=on
-        syntax enable
-        set ignorecase
-        set incsearch
-        set smartcase
-        set showmatch
-        set hlsearch
-        colorscheme slate
-        EOF
+	# vim stuff
+	[._]*.s[a-w][a-z]
+	[._]s[a-w][a-z]
+	*.un~
+	Session.vim
+	.netrwhist
+	*~
+	# gold stuff
+	_goldrc
+	awkprof.out
+	awkvars.out
+	EOF
+  fi
+}
+
+ed() { ## FILE # edit a .e file
+   cat<<-EOF> $Var/vimrc 
+	set backupdir-=.
+	set backupdir^=~/tmp,/tmp
+	set nocompatible 
+	filetype plugin indent on
+	set modelines=3
+	set scrolloff=3
+	set autoindent
+	set visualbell
+	set backspace=indent,eol,start
+	set laststatus=2
+	set splitbelow
+	set mouse=a
+	set title
+	set number
+	autocmd BufEnter * cd %:p:h
+	set showmatch
+	set matchtime=15
+	set background=light
+	set syntax=on
+	syntax enable
+	set ignorecase
+	set incsearch
+	set smartcase
+	set showmatch
+	set hlsearch
+	colorscheme slate
+	EOF
   vim -u "$Var/vimrc" $*
 }
 run() { # runs a .e file
@@ -104,7 +136,7 @@ for dir in $Var; do
 
 if [ -f "${1}.e" ]; then
         run "$@"
-elif [ `type -t $1` == 'function' ]; then
+elif [ `type -t $1`"" == 'function' ]; then
         f=$1
         shift
         $f "$@"

@@ -1,7 +1,7 @@
 #  vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: 
 
 # num : numbers
-    
+     
 function num(i) {
   i.hi  = -1e32
   i.lo  =  1e32
