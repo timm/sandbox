@@ -1,8 +1,11 @@
 #  vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: 
 
 # num : numbers
-     
+
+@include "col" 
+
 function num(i) {
+  isa(col(i))
   i.hi  = -1e32
   i.lo  =  1e32
   i.bins= 5

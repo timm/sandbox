@@ -1,23 +1,12 @@
 # /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */
 
+# ----------------------------------------
+# structs
 
-function new(i) { 
-  split("",i,"") 
-}
-function isa(x,y) { return 1 }
+function new(i)      { split("",i,"") }
+function isa(ako, _) { i.ako=ako }
+function Object(i)   { new(i); i.ako = "object"
 
-function Object(i) {
-  i.ako = "object"
-}
-function clone(i,j,    k) {
-  #shallow copy
-  new(j)
-  for(k in i)
-    if (isarray(i[k])) {
-      print "E> shallow copying a deep object"; exit
-    } else
-      j[k] = i[k];
-}
 function has(lst,key,fun) { 
   lst[key][SUBSEP]
   split("",lst[key],"")
@@ -25,3 +14,26 @@ function has(lst,key,fun) {
 }
 function have( lst,key,fun,a)   { has(lst,key); @fun(lst[key],a)   }
 function haves(lst,key,fun,a,b) { has(lst,key); @fun(lst[key],a,b) }
+function have2(lst,key,fun,a,b,c) { has(lst,key); @fun(lst[key],a,b,c) }
+function have3(lst,key,fun,a,b,c,d) { has(lst,key); @fun(lst[key],a,b,c,d) }
+function have4(lst,key,fun,a,b,c,d,e) { has(lst,key); @fun(lst[key],a,b,c,d,e) }
+
+# ---------------------------------------
+# tests
+
+function tests(all,   one,a,i,n) {
+   n = split(all,a,",")
+   print " "
+   for(i=1;i<=n;i++) {
+     one = a[i]
+     @one(one)
+}}
+function is(f,got,want,    pre) {
+  if (want == "") want=1
+  if (want == got)
+    pre="#TEST:\tPASSED"
+  else
+    pre="#TEST:\tFAILED"
+  print( pre "\t" f "\t" want "\t" got )
+}
+

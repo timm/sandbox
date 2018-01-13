@@ -1,5 +1,71 @@
 #!/usr/bin/env bash
 
+manual() { cat <<EOF
+
+# ABOUT
+
+aok
+
+A pre-processor to awk that handles
+
+- structs, with field accessed via ".";
+- auto completion of slots, at initiailization time
+- unit tests
+- multi-line comments
+
+# INSTALLATION
+
+Dowbload aok and aok.aok. Place in the same
+directory as your .aok code. Then
+
+     chmod +x aok
+
+# TESTING
+
+./aok run aokok
+
+# FILES
+
+aok     = the main routines
+aok.awk = core functionality (structs and unit tests)
+_aokrc  = (optional) stores local config
+$HOME/.aokrc = stores global config
+
+At start-up, aok loads $HOME/.aokrc then ./_aokrc,
+(if thye exist), in that order.
+
+When you write your own code, you should seperate
+your work into:
+
+stem.aok = your code
+stemok.aok = test scripts for your code
+
+# DIRECTORIES
+
+All stem.aok fils should be stored in the local directory.
+
+All  stem.aok files are converted to $Var/stem.awk files.
+The default value for $Var is ./var; i.e. in the local directory.
+To change that, alter the contents of _aokrc.
+
+If $Var does not exist, it is created by aok.
+
+# COMMANDS
+
+1) ./aok new stem: initializes source code
+
+Files created:
+
+stem.aok   = a file that loads aok.aok
+stemok.aok = test scripts for stem.aok. 
+             loads stem.aok, calls the unit tests
+
+2) ./aok run stem: run file stem.aok
+
+EOF
+}
+
+#---------------------------------
 Awk=`which gawk`
 Here=$PWD
 Var=$Here/var
@@ -7,7 +73,9 @@ Configs="$HOME/.aokrc ./_aokrc"
 FileHeader='# /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */'
 
 help() { ## # show options
-  printf "AOK v.0.2\n\noptions:\n"
+  printf "AOK v0.2\n"
+  printf "(c) 2018, tim@menziues.us, BSD 2-clause"
+  printf "\n\noptions:\n"
   grep '{ ##' $0  | sort | $Awk '
   BEGIN  {FS="[()]+[ ]*{.*#[ ]*"}
   /grep/ { next}
@@ -30,7 +98,14 @@ new() {
   if [ ! -f "${stem}ok.aok" ]; then cat <<-EOF > "${stem}ok.aok"
 	$FileHeader
 	@include "${stem}"
-	
+
+	function _test1(f) {
+		is(f,1,1)
+	}
+	BEGIN {
+		srand(1)
+		tests("_test1")
+	}
 	EOF
   fi
 }
