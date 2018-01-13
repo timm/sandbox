@@ -28,7 +28,4 @@ function numAdd(i,x,          delta) {
 function numStretch(i) {
   return i.sd
 }
-function numNorm(i,x) {
-  return (x-i.lo)/(i.hi - i.lo + 1e-32)
-}
 

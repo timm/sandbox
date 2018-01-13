@@ -3,11 +3,11 @@
 Awk=`which gawk`
 Here=$PWD
 Var=$Here/var
-Configs="$HOME/.erc ./_erc"
+Configs="$HOME/.aokrc ./_aokrc"
 FileHeader='# /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */'
 
 help() { ## # show options
-  printf "GOLD v.0.2\n\noptions:\n"
+  printf "AOK v.0.2\n\noptions:\n"
   grep '{ ##' $0  | sort | $Awk '
   BEGIN  {FS="[()]+[ ]*{.*#[ ]*"}
   /grep/ { next}
@@ -19,22 +19,22 @@ ok() {
 
 new() {
   stem=$1
-  if [ ! -f "${stem}.e" ]; then cat <<-EOF > "${stem}.e"
+  if [ ! -f "${stem}.aok" ]; then cat <<-EOF > "${stem}.aok"
 	$FileHeader
-	@include "e"
+	@include "aok"
 	
-	# ${stem}.e 
+	# ${stem}.aok 
 
 	EOF
   fi
-  if [ ! -f "${stem}ok.e" ]; then cat <<-EOF > "${stem}ok.e"
+  if [ ! -f "${stem}ok.aok" ]; then cat <<-EOF > "${stem}ok.aok"
 	$FileHeader
 	@include "${stem}"
 	
 	EOF
   fi
 }
-_e2awk() {
+_aok2awk() {
   $Awk '
 BEGIN {In=1}
 /^function / {
@@ -55,6 +55,7 @@ In {
 }
 gitignore() { ## # add a gitignore statement
   if [ ! -f .gitignore ]; then cat <<-EOF > .gitignore
+	.DS_Store
 	# vim stuff
 	[._]*.s[a-w][a-z]
 	[._]s[a-w][a-z]
@@ -70,7 +71,7 @@ gitignore() { ## # add a gitignore statement
   fi
 }
 
-ed() { ## FILE # edit a .e file
+ed() { ## FILE # edit a .aok file
    cat<<-EOF> $Var/vimrc 
 	set backupdir-=.
 	set backupdir^=~/tmp,/tmp
@@ -101,7 +102,8 @@ ed() { ## FILE # edit a .e file
 	EOF
   vim -u "$Var/vimrc" $*
 }
-run() { # runs a .e file
+run() { # runs a .aok file
+  prep
   file=$1
   Built="$Var/$file.awk"
   shift
@@ -113,13 +115,13 @@ run() { # runs a .e file
     $Awk '/[A-Z][A-Z]/ {next} {print "W> rogue local: ",$0}' $Var/${file}.vars
   fi
 }
-prep() { ##  # ensure all .e files have .awk version
-  for i in *.e; do
-    stem=$(basename "$i" ".e")
+prep() { ##  # ensure all .aok files have .awk version
+  for i in *.aok; do
+    stem=$(basename "$i" ".aok")
     j="$Var/${stem}.awk"
     if [ "$i" -nt "$j" ]; then
       echo "# $i ==> $j"
-      cat "$i" | _e2awk > "$j"
+      cat "$i" | _aok2awk > "$j"
     fi
   done
 }
@@ -134,7 +136,7 @@ for file in $configs; do
 for dir in $Var; do
   mkdir -p $dir; done
 
-if [ -f "${1}.e" ]; then
+if [ -f "${1}.aok" ]; then
         run "$@"
 elif [ `type -t $1`"" == 'function' ]; then
         f=$1
