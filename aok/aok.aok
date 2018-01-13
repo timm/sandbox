@@ -1,0 +1,27 @@
+# /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */
+
+
+function new(i) { 
+  split("",i,"") 
+}
+function isa(x,y) { return 1 }
+
+function Object(i) {
+  i.ako = "object"
+}
+function clone(i,j,    k) {
+  #shallow copy
+  new(j)
+  for(k in i)
+    if (isarray(i[k])) {
+      print "E> shallow copying a deep object"; exit
+    } else
+      j[k] = i[k];
+}
+function has(lst,key,fun) { 
+  lst[key][SUBSEP]
+  split("",lst[key],"")
+  if (fun) @fun(lst[key]) 
+}
+function have( lst,key,fun,a)   { has(lst,key); @fun(lst[key],a)   }
+function haves(lst,key,fun,a,b) { has(lst,key); @fun(lst[key],a,b) }
