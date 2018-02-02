@@ -1,0 +1,222 @@
+#!/usr/bin/env bash
+
+manual() { cat <<EOF
+
+# ABOUT
+
+aok
+
+A pre-processor to awk that handles
+
+- structs, with field accessed via ".";
+- auto completion of slots, at initiailization time
+- unit tests
+- multi-line comments
+
+# INSTALLATION
+
+Dowbload aok and aok.aok. Place in the same
+directory as your .aok code. Then
+
+     chmod +x aok
+
+# TESTING
+
+./aok run aokok
+
+# FILES
+
+aok     = the main routines
+aok.awk = core functionality (structs and unit tests)
+_aokrc  = (optional) stores local config
+$HOME/.aokrc = stores global config
+
+At start-up, aok loads $HOME/.aokrc then ./_aokrc,
+(if thye exist), in that order.
+
+When you write your own code, you should seperate
+your work into:
+
+stem.aok = your code
+stemok.aok = test scripts for your code
+
+# DIRECTORIES
+
+All stem.aok fils should be stored in the local directory.
+
+All  stem.aok files are converted to $Var/stem.awk files.
+The default value for $Var is ./var; i.e. in the local directory.
+To change that, alter the contents of _aokrc.
+
+If $Var does not exist, it is created by aok.
+
+# COMMANDS
+
+1) ./aok new stem: initializes source code
+
+Files created:
+
+stem.aok   = a file that loads aok.aok
+stemok.aok = test scripts for stem.aok. 
+             loads stem.aok, calls the unit tests
+
+2) ./aok run stem: run file stem.aok
+
+EOF
+}
+
+#---------------------------------
+Awk=`which gawk`
+Here=$PWD
+Var=$Here/var
+Configs="$HOME/.aokrc ./_aokrc"
+FileHeader='# /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */'
+
+help() { ## # show options
+  printf "AOK v0.2\n"
+  printf "(c) 2018, tim@menziues.us, BSD 2-clause"
+  printf "\n\noptions:\n"
+  grep '{ ##' $0  | sort | $Awk '
+  BEGIN  {FS="[()]+[ ]*{.*#[ ]*"}
+  /grep/ { next}
+         { printf("    %-15s%s\n",$1,$2)}'
+}
+ok() {
+  $0 run $1
+}
+
+new() {
+  stem=$1
+  if [ ! -f "${stem}.aok" ]; then cat <<-EOF > "${stem}.aok"
+	$FileHeader
+	@include "aok"
+	
+	# ${stem}.aok 
+
+	EOF
+  fi
+  if [ ! -f "${stem}ok.aok" ]; then cat <<-EOF > "${stem}ok.aok"
+	$FileHeader
+	@include "${stem}"
+
+	function _test1(f) {
+		is(f,1,1)
+	}
+	BEGIN {
+		srand(1)
+		tests("_test1")
+	}
+	EOF
+  fi
+}
+_aok2awk() {
+  $Awk '
+BEGIN {In=1}
+/^function / {
+   f= gensub(/function[ \t]+\([a-zA-Z0-9_]+\)\(.*$\)/,"\\1",1,$0) }
+
+/^[ \t]+isa\(/ {
+   print gensub(/\(.*\)isa.\(.*\)$/,"\\1isa(\" f \",\\2", 1, $0)  }
+
+gsub(/^\"\"\"/,"") { In =  1 - In  }
+                   { pre  = In ? "" : "# " }
+In {
+    print pre gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, "[\"\\1\\2\"]", "g", $0)
+    next }
+   {
+    print pre $0
+   }
+' -
+}
+gitignore() { ## # add a gitignore statement
+  if [ ! -f .gitignore ]; then cat <<-EOF > .gitignore
+	.DS_Store
+	# vim stuff
+	[._]*.s[a-w][a-z]
+	[._]s[a-w][a-z]
+	*.un~
+	Session.vim
+	.netrwhist
+	*~
+	# gold stuff
+	_goldrc
+	awkprof.out
+	awkvars.out
+	EOF
+  fi
+}
+
+ed() { ## FILE # edit a .aok file
+   cat<<-EOF> $Var/vimrc 
+	set backupdir-=.
+	set backupdir^=~/tmp,/tmp
+	set nocompatible 
+	filetype plugin indent on
+	set modelines=3
+	set scrolloff=3
+	set autoindent
+	set visualbell
+	set backspace=indent,eol,start
+	set laststatus=2
+	set splitbelow
+	set mouse=a
+	set title
+	set number
+	autocmd BufEnter * cd %:p:h
+	set showmatch
+	set matchtime=15
+	set background=light
+	set syntax=on
+	syntax enable
+	set ignorecase
+	set incsearch
+	set smartcase
+	set showmatch
+	set hlsearch
+	colorscheme slate
+	EOF
+  vim -u "$Var/vimrc" $*
+}
+run() { # runs a .aok file
+  prep
+  file=$1
+  Built="$Var/$file.awk"
+  shift
+  AWKPATH=$Var                              \
+      $Awk --profile="$Var/${file}.profile"   \
+           --dump-variables="$Var/${file}.vars" \
+           -f $Built "$@"
+  if [ -f "$Var/${file}.vars" ]; then
+    $Awk '/[A-Z][A-Z]/ {next} {print "W> rogue local: ",$0}' $Var/${file}.vars
+  fi
+}
+prep() { ##  # ensure all .aok files have .awk version
+  for i in *.aok; do
+    stem=$(basename "$i" ".aok")
+    j="$Var/${stem}.awk"
+    if [ "$i" -nt "$j" ]; then
+      echo "# $i ==> $j"
+      cat "$i" | _aok2awk > "$j"
+    fi
+  done
+}
+###################################
+# get all the configs (if any)
+
+for file in $configs; do
+  if [ -f "$file" ]; then
+    . $file ; fi; done
+
+for dir in $Var; do
+  mkdir -p $dir; done
+
+if [ -f "${1}.aok" ]; then
+        run "$@"
+elif [ `type -t $1`"" == 'function' ]; then
+        f=$1
+        shift
+        $f "$@"
+else
+     help
+fi
+

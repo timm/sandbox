@@ -1,0 +1,12 @@
+.DS_Store
+# vim stuff
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+# gold stuff
+_goldrc
+awkprof.out
+awkvars.out
