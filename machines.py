@@ -80,9 +80,17 @@ class Ocean(State):
   def whales(i)   : return random.random() < 0.1
   def atlantis(i) : return random.random() < 0.01
 
-class Happy(State) : tag = ":-)"
+class Happy(State) : 
+  tag = ":-)"
+  def dance(i):
+    print("dancing!")
+    return True
 class Sad(State)   : tag = ":-("
 class Exit(State)  : tag = "."
+
+class Trans(Thing):
+  def __init__(i,gaurd, there):
+    i.gaurd, i.there = gaurd, there
 
 class Machine(Thing):
   """Maintains a set of named states. 
@@ -115,10 +123,12 @@ class Machine(Thing):
 @ok
 def sym1():
   rseed()
+  t= Trans
   m = Machine("main")
   s = m.state
   x = s("cheery:-)")
   y = s("crying:-(")
+  x._trans + [t(x.dance, y)]
   print(x.__class__.__name__)
   print(y.__class__.__name__)
 
