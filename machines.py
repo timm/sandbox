@@ -57,7 +57,7 @@ class Struct(Thing):
 
 #########################################################
 #<BEGIN>
-#str.find(str, beg=0, end=len(string))
+
 class Trans(Thing):
   def __init__(i,here,gaurd,there):
     i.here  = here
@@ -106,6 +106,7 @@ class Machine(Thing):
       if k.tag and contains(txt,k.tag): 
         return k(txt)
     return State(txt)
+  def __add__(i,x): return i.state(x)
   def state(i,x):
     i.seen[x] = y = i.seen[x] if x in i.seen else i.isa(x) 
     i.first  = i.first or y
@@ -129,6 +130,11 @@ class Machine(Thing):
 @ok
 def sym1():
   rseed()
+  m = Machine("main")
+  s = m.s
+  s("cheery:-)")
+  s("crying:-(")
+  s=Ocean(s(
 
 if __name__== "__main__":
   ok()
