@@ -51,28 +51,17 @@ class Thing(object):
   def __repr__(i) : 
     return i.__class__.__name__ + kv(i.__dict__)
 
-class Struct(Thing):
+class o(Thing):
   def __init__(i, **dic) : i.__dict__.update(dic)
   def __getitem__(i, x)  : return i.__dict__[x]
 
 #########################################################
 #<BEGIN>
 
-class Trans(Thing):
-  def __init__(i,here,gaurd,there):
-    i.here  = here
-    i.there = there
-    i.gaurd = gaurd
-  def maybe(i) : return random.random() < 0.5
-
-class Ocean(Trans):
-  def whales(i)   : return random.random() < 0.1
-  def atlantis(i) : return random.random() < 0.01
-
 class State(Thing) : 
   tag = ""
   def __init__(i, name):
-    i.name   = txt
+    i.name   = name
     i._trans = []
   def step(i):
     for j in shuffle(i._trans):
@@ -85,45 +74,41 @@ class State(Thing) :
     print("arriving at %s" % txt)
   def onExit(i):
     print("leaning  %s" % txt)
+  def maybe(i) : return random.random() < 0.5
+
+class Ocean(State):
+  def whales(i)   : return random.random() < 0.1
+  def atlantis(i) : return random.random() < 0.01
 
 class Happy(State) : tag = ":-)"
 class Sad(State)   : tag = ":-("
 class Exit(State)  : tag = "."
-
-# need a global stop
 
 class Machine(Thing):
   """Maintains a set of named states. 
      Creates new states if its a new name.
      Returns old states if its an old name."""
   def __init__(i, name, most=1000):
-    i.seen  = {}
+    i.all   = {}
     i.name  = name
     i.start = None
-    i.most  = hi
+    i.most  = most
   def isa(i,txt): 
     for k in isa(State):
       if k.tag and contains(txt,k.tag): 
         return k(txt)
     return State(txt)
-  def __add__(i,x): return i.state(x)
   def state(i,x):
-    i.seen[x] = y = i.seen[x] if x in i.seen else i.isa(x) 
-    i.first  = i.first or y
-    i.latest = y
+    i.all[x] = y = i.all[x] if x in i.all else i.isa(x) 
+    i.start  = i.start or y
     return y
-  def trans(i,trans):
-    trans.here._trans + [trans]
   def run(i,state):
-    for _ in range(i.most):
-      state = state.next()
-    return state
-  def onEntry(i): 
     print("booting %s" % i.name)
-    i.start.onEntry()
-    return i.run( i.start )
-  def onExit(i) : 
-    print("shutting down %s" % i.name)
+    state = i.start
+    state.onEntry()
+    for _ in range(i.most):
+      state = state.step()
+    return state
 
 #END>
 ####################################
@@ -131,10 +116,11 @@ class Machine(Thing):
 def sym1():
   rseed()
   m = Machine("main")
-  s = m.s
-  s("cheery:-)")
-  s("crying:-(")
-  s=Ocean(s(
+  s = m.state
+  x = s("cheery:-)")
+  y = s("crying:-(")
+  print(x.__class__.__name__)
+  print(y.__class__.__name__)
 
 if __name__== "__main__":
   ok()
