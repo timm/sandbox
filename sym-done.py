@@ -25,18 +25,24 @@ def ok(f=None):
 #########################################################
 #<BEGIN>
 
-class Sym(object):
+def kv(d):
+  """Return a string of the dictionary,
+     keys in sorted order,
+     hiding any key that starts with '_'"""
+  return '(' + ', '.join(['%s: %s' % (k, d[k])
+                          for k in sorted(d.keys())
+                          if k[0] != "_"]) + ')'
+
+class Thing(object):
+  def __repr__(i): return kv(i.__dict__)
+
+class Sym(Thing):
   def __init__(i, inits=None):
     i.counts= {}   # track total of things seen so far
     i.most  = 0    # track number of most common thing
     i.mode  = None # track value of most common thing
     i.total = 0    # count of totl things seen so far
     i.adds(inits or []) # if any inits, add them in
-  def __repr__(i):
-    "print a represtation of the Sym"
-    return str(dict(most=i.most,mode=i.mode,total=i.total,
-                    counts=i.counts))
-
   def __imul__(i,x): i.adds(x); return i
   def __iadd(i,x):   i.add(x) ; return i
   def adds(i,lst):  
