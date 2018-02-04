@@ -1,8 +1,8 @@
 # vim: set filetype=python ts=2 sw=2 sts=2 expandtab: 
-import re,traceback,time,random
+import sys,re,traceback,time,random
 
 def rseed(seed=1):
-  random.seed(seed)
+  random.seed(int(seed))
 
 def shuffle(lst):
   random.shuffle(lst)
@@ -15,10 +15,10 @@ def about(f):
 
 TRY=FAIL=0
 def ok(f=None):
-  global TRY,FAIL
+  global TRY,FAIL 
   if f:
-    try:    TRY  += 1; about(f); f(); print("# pass"); 
-    except: FAIL += 1; print(traceback.format_exc());
+    try    : TRY  += 1; about(f); f(); print("# pass"); 
+    except : FAIL += 1; print(traceback.format_exc());
     return f
   else:
     print("\n# %s TRY= %s ,FAIL= %s ,%%PASS= %s"  % (
@@ -55,83 +55,141 @@ class o(Thing):
   def __init__(i, **dic) : i.__dict__.update(dic)
   def __getitem__(i, x)  : return i.__dict__[x]
 
-#########################################################
-#<BEGIN>
+#---------------------------------------
+def asLambda(i,txt):
+  def methodsOf(i):
+    return [s for s in i.__dir__() if s[0] is not "_"]
+  for one in methodsOf(i):
+    txt = re.sub(one, 'z.%s()' % one ,txt)
+  txt = "lambda z: " + txt
+  code = eval(txt)
+  # e.g. print("> ",code(i))
 
+#---------------------------------------
+#<BEGIN>
 class State(Thing) : 
   tag = ""
-  def __init__(i, name):
+  def __init__(i, name,m):
+    i.aaaa = 111
     i.name   = name
     i._trans = []
+    i.model  = m
+  def trans(i,gaurd,there):
+    i._trans += [o(gaurd=gaurd, there=there)]
   def step(i):
     for j in shuffle(i._trans):
       if j.gaurd(i):
+        print("now",j.gaurd.__name__)
         i.onExit()
         j.there.onEntry()
         return j.there
     return i
-  def onEntry(i):
-    print("arriving at %s" % txt)
-  def onExit(i):
-    print("leaning  %s" % txt)
-  def maybe(i) : return random.random() < 0.5
+  def onEntry(i) : print("arriving at %s" % i.name)
+  def onExit(i)  : print("leaving %s"    % i.name)
+  def quit(i)    : return False
 
 class Ocean(State):
+  tag="_^_"
   def whales(i)   : return random.random() < 0.1
   def atlantis(i) : return random.random() < 0.01
 
 class Happy(State) : 
   tag = ":-)"
-  def dance(i):
-    print("dancing!")
+  def onEntry(i):
+    print("i am so happy!")
+
+class Sad(State)   : 
+  tag = ":-("
+  def onEntry(i):
+    print("i am so sad!")
+
+class Exit(State)  : 
+  tag = "."
+  def quit(i) : 
     return True
-class Sad(State)   : tag = ":-("
-class Exit(State)  : tag = "."
+  def onExit(i):
+    print("bye bye")
+    return i
 
-class Trans(Thing):
-  def __init__(i,gaurd, there):
-    i.gaurd, i.there = gaurd, there
-
+#---------------------------------------
 class Machine(Thing):
   """Maintains a set of named states. 
      Creates new states if its a new name.
      Returns old states if its an old name."""
-  def __init__(i, name, most=1000):
+  def __init__(i, name, most=64):
     i.all   = {}
     i.name  = name
     i.start = None
     i.most  = most
-  def isa(i,txt): 
+  def isa(i,x): 
+    if isinstance(x, State):
+      return x
     for k in isa(State):
-      if k.tag and contains(txt,k.tag): 
-        return k(txt)
-    return State(txt)
+      if k.tag and contains(x,k.tag): 
+        return k(x,i)
+    return State(x,i)
   def state(i,x):
     i.all[x] = y = i.all[x] if x in i.all else i.isa(x) 
     i.start  = i.start or y
     return y
-  def run(i,state):
+  def trans(i, here, gaurd, there):
+    i.state(here).trans(gaurd, 
+                        i.state(there))
+  def run(i):
     print("booting %s" % i.name)
     state = i.start
     state.onEntry()
-    for _ in range(i.most):
+    for i in range(i.most):
       state = state.step()
-    return state
+      if state.quit(): 
+        break
+    return state.onExit()
+  def maybe(i,s) : return random.random() < 0.5
+  def true(i,s)  : return True
+
+class MyMachine(Machine):
+  def rain(i,s)  : return random.random() < 0.3
+  def sunny(i,s) : return random.random() < 0.6
+  def sick(i,s)  : return random.random() < 0.2
+
+#---------------------------------------
+def make(m,fun):
+  fun(m, m.state, m.trans)
+  return m
 
 #END>
-####################################
-@ok
-def sym1():
-  rseed()
-  t= Trans
+#---------------------------------------
+#@ok
+def machine1():
   m = Machine("main")
   s = m.state
+  a = s("start")
   x = s("cheery:-)")
   y = s("crying:-(")
-  x._trans + [t(x.dance, y)]
-  print(x.__class__.__name__)
-  print(y.__class__.__name__)
+  e = s("sleeping.")
+  a.trans(x.true,  x)
+  x.trans(x.rain,  y)
+  x.trans(x.sick,  y)
+  x.trans(x.maybe, e)
+  y.trans(y.sunny, x)
+  m.run()
 
+def spec001(m,s,t):
+  grin = s("cheery:-)")
+  cry  = s("crying:-(")
+  t("start",  m.true,    grin)
+  t(grin,     m.rain,    cry)
+  t(grin,     m.sick,    cry)
+  t(grin,     m.maybe,   "sleeping.")
+  t(cry,      m.sunny,   grin)
+
+@ok
+def machine2():
+  make(MyMachine("playtime"), 
+       spec001).run()
+
+#---------------------------------------
 if __name__== "__main__":
+  rseed(sys.argv[-1])
   ok()
 
