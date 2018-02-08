@@ -91,9 +91,14 @@ class State:
     [action(payload) for action in actions]
     i.onExit()
     there.onEntry()
+    for desire in i.desires:
+      desire(there,payload)  # infect next state with my desires
     return there
 
   def exampleGaurd(i,payload):
     "dance in place"
     if payload.happy:
       return [i.machine.grin, i.machine.dance], i
+
+  def exampleDesire(i,there,payload):
+    there.beliefs += [payload.optimism]
