@@ -1,4 +1,5 @@
-(load "deftest")
+#-base (load "base")
+(uses "test")
 
 (deftest _aa ()
   "should be one failure"

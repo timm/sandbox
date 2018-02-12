@@ -1,4 +1,10 @@
 #-base (load "base")
 
-(uses "hash" "fun" "deftest" "list" 
-      "macros" "rand" "strings")
+(uses 
+  "macro" 
+  "hash" 
+  "list" 
+  "rand" 
+  "string"
+  "fun"  
+)
