@@ -1,0 +1,2 @@
+
+BEGIN {print 1}
