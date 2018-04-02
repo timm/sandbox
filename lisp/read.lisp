@@ -1,3 +1,8 @@
+#!/bin/sh
+#|
+exec clisp -q -q $0 $0 ${1+"$@"}
+|#
+
 (defun circular (items)
   (setf (cdr (last items)) items)
   items)
@@ -52,7 +57,7 @@
 (defun oul (what lst) 
   (let ((rows (circular (list #'odds #'evens))))
     (labels ((row (s) (funcall (pop rows) s)))
-      (pairln what (mapcar #'row lst)))))
+      (pairln what (format nil "~{~a~}" (mapcar #'row lst))))))
 
 (defun ol (&rest lst) (oul "ol" lst))
 (defun ul (&rest lst) (oul "ul" lst))
@@ -69,7 +74,7 @@
 (page  
   (html 
     %"My Home's Page"
-    (list  
+    (cat  
       (h1 %"ido drugs")
       (p %"I like traffic Light's")
       (ol %"One suff"
