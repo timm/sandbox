@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
 import sys,random
 
+########################################
 seed = random.seed
 r    = random.random
 any  = random.choice
+nump = lambda z: isinstance(z,(float,int))
 
+def kv(d):
+  out = lambda x: round(x,THE.decimals) if nump(x) else x
+  return '('+', '.join(['%s: %s' % (k,out(d[k]))
+          for k in sorted(d.keys())
+          if not k[0] is "_"]) + ')'
+
+########################################
 class o:
   def __repr__(i): return i.__class__.__name__ + kv(i.__dict__)
   def __init__(i, **l): i.__dict__.update(l)
@@ -19,7 +28,7 @@ class Num(o):
     i.lo   = min(x, i.lo)  
     i.hi   = max(x, i.hi)  
     delta  = x - i.mu
-    i.mu  += delta*1.0/i.n
+    i.mu  += delta/i.n
     i.m2  += delta*(x - i.mu)
   def sd(i): 
     return (i.m2/(i.n - 1))**0.5
@@ -28,15 +37,19 @@ class Num(o):
 
 class Sym(o):
   def __init__(i):  
-    i.n,i.seen = 0,{}
+    i.n, i.seen, _cdf = 0, {}, None
   def __add__(i,x): 
     i.n += 1
     i.seen[x] = i.seen.get(x,0) + 1
+    i._cdf = None
   def cdf(i):
-    return sorted([ (k[d]/i.n, k) for k in d ], reverse=True)
-  def any(i, cdf):
+    i._cdf = i._cdf or sorted(
+                         [(k[d]/i.n, k) for k in i.seen], 
+                         reverse=True)
+    return i._cdf
+  def any(i):
     z = r()
-    for p,k in cdf:
+    for p,k in i.cdf():
       z -= p
       if z <= 0: return k
     return k
@@ -46,7 +59,7 @@ class Col(o):
     i.pos, i.txt, i.has, i.w = pos, txt, None, -1
   def __add__(i,x):
     if x is not THE.skip:
-      i.has = i.has or (Sym() if isinstance(x,str) else Num())
+      i.has = i.has or (Num() if nump(x) else Sym())
       i.has + x
 
 class Row(o):
@@ -58,37 +71,35 @@ class Row(o):
   def dominates(i,j,t, e=2.71828):
     s1,s2,n = 0,0,len(t.outs)
     for col in t.outs :
-      a0  = i.cells[col.pos]
-      b0  = j.cells[col.pos]
-      a   = col.has.norm( a0 )
-      b   = col.has.norm( b0 )
+      a   = col.has.norm( i.cells[ col.pos ] )
+      b   = col.has.norm( j.cells[ col.pos ] )
       s1 -= e**( col.w * (a-b)/n )
       s2 -= e**( col.w * (b-a)/n )
     return s1/n < s2/n
 
 class Table(o):
   def __init__(i, rows=[], cols=[]):
-    i.cols = [ Col(j,x) for j,x in enumerate(cols)       ]
-    i.less = [ c for c in i.cols if c.txt[0] == "<"      ]
-    i.more = [ c for c in i.cols if c.txt[0] == ">"      ]
-    i.ins  = [ c for c in i.cols if c.txt[0] not in "<>" ]
-    i.outs = [ c for c in i.cols if c.txt[0]     in "<>" ]
+    i.cols = i.words2cols(cols)
+    i.rows = [ Row(row,i) for row in rows ]
+    i.dominates()
+  def words2cols(i, words ):
+    cols   = [ Col(j,x) for j,x in enumerate( words )     ]
+    i.less = [ c for c in cols if c.txt[0] == "<"      ]
+    i.more = [ c for c in cols if c.txt[0] == ">"      ]
+    i.ins  = [ c for c in cols if c.txt[0] not in "<>" ]
+    i.outs = [ c for c in cols if c.txt[0]     in "<>" ]
     for col in i.more: col.w =  1
     for col in i.less: col.w = -1
-    i.rows = [ Row(row,i) for row in rows ]
+    return cols
+  def dominates(i):
     for row1 in i.rows:
       for row2 in i.rows:
         if row1.dominates(row2,i):
           row1.dom += 1
-    i.rows = sorted(i.rows, key = lambda z: z.dom, reverse=True)
+    i.rows = sorted(i.rows, 
+                    reverse= True,
+                    key= lambda z: z.dom) 
     print([row.dom for row in i.rows])
-########################################
-
-def kv(d):
-  out = lambda x: round(x,THE.decimals) if isinstance(x,float) else x
-  return '('+', '.join(['%s: %s' % (k,out(d[k]))
-          for k in sorted(d.keys())
-          if not k[0] is "_"]) + ')'
 
 ########################################
 def choice(lst,items):
