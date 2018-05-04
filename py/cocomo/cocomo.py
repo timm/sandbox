@@ -23,15 +23,15 @@ class Num(o):
     i.m2  += delta*(x - i.mu)
   def sd(i): 
     return (i.m2/(i.n - 1))**0.5
-  def norm(i, x, z= 10**-32):
-    return (x - i.lo) / (i.hi - i.lo + z)
+  def norm(i, x, z=10**-32):
+    return  (x - i.lo) / (i.hi - i.lo + z)
 
 class Sym(o):
   def __init__(i):  
     i.n,i.seen = 0,{}
-  def __add__(i,x): i
+  def __add__(i,x): 
     i.n += 1
-    i.seen = i.seen.get(x,0) + 1
+    i.seen[x] = i.seen.get(x,0) + 1
   def cdf(i):
     return sorted([ (k[d]/i.n, k) for k in d ], reverse=True)
   def any(i, cdf):
@@ -43,7 +43,7 @@ class Sym(o):
 
 class Col(o):
   def __init__(i,pos, txt): 
-    i.pos, i.txt, i.has, i.w = pos, txt, None, 1
+    i.pos, i.txt, i.has, i.w = pos, txt, None, -1
   def __add__(i,x):
     if x is not THE.skip:
       i.has = i.has or (Sym() if isinstance(x,str) else Num())
@@ -58,10 +58,12 @@ class Row(o):
   def dominates(i,j,t, e=2.71828):
     s1,s2,n = 0,0,len(t.outs)
     for col in t.outs :
-      x   = col.has.norm( i.cells[ col.pos] )
-      y   = col.has.norm( i.cells[ col.pos] )
-      s1 += e**( col.w * (x-y)/n )
-      s2 += e**( col.w * (y-x)/n )
+      a0  = i.cells[col.pos]
+      b0  = j.cells[col.pos]
+      a   = col.has.norm( a0 )
+      b   = col.has.norm( b0 )
+      s1 -= e**( col.w * (a-b)/n )
+      s2 -= e**( col.w * (b-a)/n )
     return s1/n < s2/n
 
 class Table(o):
@@ -71,22 +73,22 @@ class Table(o):
     i.more = [ c for c in i.cols if c.txt[0] == ">"      ]
     i.ins  = [ c for c in i.cols if c.txt[0] not in "<>" ]
     i.outs = [ c for c in i.cols if c.txt[0]     in "<>" ]
-    for col in i.less: 
-      col.w = -1
+    for col in i.more: col.w =  1
+    for col in i.less: col.w = -1
     i.rows = [ Row(row,i) for row in rows ]
     for row1 in i.rows:
       for row2 in i.rows:
         if row1.dominates(row2,i):
           row1.dom += 1
-    sorted(rows, key = lambda z: row.dom, reverse=True)
-
+    i.rows = sorted(i.rows, key = lambda z: z.dom, reverse=True)
+    print([row.dom for row in i.rows])
 ########################################
 
 def kv(d):
   out = lambda x: round(x,THE.decimals) if isinstance(x,float) else x
   return '('+', '.join(['%s: %s' % (k,out(d[k]))
           for k in sorted(d.keys())
-          if not k[0]= "_"]) + ')'
+          if not k[0] is "_"]) + ')'
 
 ########################################
 def choice(lst,items):
