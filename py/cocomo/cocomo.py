@@ -7,16 +7,15 @@ r    = random.random
 any  = random.choice
 nump = lambda z: isinstance(z,(float,int))
 
-def kv(d):
-  out = lambda x: round(x,THE.decimals) if nump(x) else x
-  return '('+', '.join(['%s: %s' % (k,out(d[k]))
-          for k in sorted(d.keys())
-          if not k[0] is "_"]) + ')'
-
 ########################################
 class o:
-  def __repr__(i): return i.__class__.__name__ + kv(i.__dict__)
   def __init__(i, **l): i.__dict__.update(l)
+  def __repr__(i): 
+    def kv(d):
+      out = lambda x: round(x,THE.decimals) if nump(x) else x
+      return '('+', '.join(['%s: %s' % (k,out(d[k]))
+              for k in sorted(d.keys()) if not k[0] is "_"]) + ')'
+    return i.__class__.__name__ + kv(i.__dict__)
 
 THE = o(decimals=3, skip='?')
 
