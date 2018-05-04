@@ -81,8 +81,8 @@ class Table(o):
     i.cols = i.words2cols(cols)
     i.rows = [ Row(row,i) for row in rows ]
     i.dominates()
-  def words2cols(i, words ):
-    cols   = [ Col(j,x) for j,x in enumerate( words )     ]
+  def words2cols(i, lst ):
+    cols   = [ Col(j,x) for j,x in enumerate(lst) if j[0] != "?" ]
     i.less = [ c for c in cols if c.txt[0] == "<"      ]
     i.more = [ c for c in cols if c.txt[0] == ">"      ]
     i.ins  = [ c for c in cols if c.txt[0] not in "<>" ]
