@@ -28,12 +28,12 @@ def showt(t, tab="|..", pre="",lvl=0,val=lambda z: ""):
     showt(t.right, tab, "> ", lvl+1, val)
 
 THE = o(    
-        few=4,
-        power=0.5,
         n=20,
         decimals=3, 
         epsilon=1, 
         skip='?', 
+        few=4,
+        power=0.5,
         cohen=0.3
         )
 
@@ -120,41 +120,39 @@ class Table(o):
     print([row.dom for row in i.rows])
 
 def splits(lst, epsilon=None, few=None, x=same, y=same):
-  return splits1( x, 
-                  y, 
-                  0, 
-                  len(lst), 
-                  sorted(lst, key=x), 
-                  epsilon or Num(inits=lst,f=x).sd()*THE.cohen,
-                  few or len(lst)**THE.power)
+  def worker(lo, hi):
+    m     = lo + (hi - lo) // 2
+    stats = Num( lst[lo:hi], f=y )
+    node  = o(value=stats, key=m, use=True, left=None, right=None) 
+    while m < hi and x( lst[m] ) == x( lst[m+1] ): 
+      m += 1
+    if hi - m >= few:
+      if m - lo >= few:  
+        if x( lst[hi-1] ) - x( lst[m] ) > epsilon:
+          if x( lst[m] )  - x( lst[lo] ) > epsilon:
+            node.key   = m
+            node.left  = worker(lo,   m)
+            node.right = worker(m+1, hi)
+            return node
+  # main ------------------
+  epsilon = epsilon or Num(inits=lst,f=x).sd()*THE.cohen
+  few     = few     or len(lst)**THE.power
+  lst     = sorted(lst, key=x)
+  return worker( 0, len(lst) ) 
 
-def splits1(x, y, lo, hi, lst, epsilon, few):
-  m     = lo + (hi - lo) // 2
-  stats = Num( lst[lo:hi], f=y )
-  node  = o(value=stats, key=m, left=None, right=None) 
-  while m < hi and x( lst[m] ) == x( lst[m+1] ): 
-    m += 1
-  if hi - m >= few:
-    if m - lo >= few:  
-      if x( lst[hi-1] ) - x( lst[m] ) > epsilon:
-        if x( lst[m] )  - x( lst[lo] ) > epsilon:
-          node.key   = m
-          node.left  = splits1(x, y, lo,   m, lst, epsilon, few)
-          node.right = splits1(x, y, m+1, hi, lst, epsilon, few)
-  return node
- 
+   
 def _split():
-  a= lambda: random.gauss(2,1)
-  b= lambda: random.gauss(5,1)
-  c= lambda: random.gauss(8,1)
-  d= lambda: random.gauss(12,1)
-  e= lambda: random.gauss(15,1)
-  f= lambda: random.gauss(18,1)
+  seed(1)
+  f= lambda z: round(z,4)
+  a= lambda: f(random.gauss(2,1))
+  b= lambda: f(random.gauss(5,1))
+  c= lambda: f(random.gauss(8,1))
+  d= lambda: f(random.gauss(12,1))
+  e= lambda: f(random.gauss(15,1))
   data=[]
-  for _ in range(10**4):
-    data += [a(),b(),c(),d(),e(),f()]
-  f= lambda z: round(z,1)
-  showt( splits(data),val=lambda z : (f(z.lo),f(z.hi)))
+  for _ in range(100):
+    data += [a(),b(),c(),d(),e()]
+  showt( splits(data),val=lambda z : (f(z.n), f(z.lo),f(z.hi)))
 
 _split()
 
