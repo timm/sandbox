@@ -2,10 +2,14 @@
 import sys,random
 
 ########################################
-seed = random.seed
-r    = random.random
-any  = random.choice
-nump = lambda z: isinstance(z,(float,int))
+seed  = random.seed
+r     = random.random
+any   = random.choice
+nump  = lambda z: isinstance(z,(float,int))
+first = lambda z: z[ 0]
+last  = lambda z: z[-1]
+
+def same(x): return x
 
 ########################################
 class o:
@@ -17,11 +21,26 @@ class o:
               for k in sorted(d.keys()) if not k[0] is "_"]) + ')'
     return i.__class__.__name__ + kv(i.__dict__)
 
-THE = o(decimals=3, skip='?')
+def showt(t, tab="|..", pre="",lvl=0,val=lambda z: ""):
+  if t:
+    print(tab*lvl + pre + str( t.key or "" ) + ". " + str(val(t.value)))
+    showt(t.left,  tab, "< ", lvl+1, val)
+    showt(t.right, tab, "> ", lvl+1, val)
+
+THE = o(    
+        few=4,
+        power=0.5,
+        n=20,
+        decimals=3, 
+        epsilon=1, 
+        skip='?', 
+        cohen=0.3
+        )
 
 class Num(o):
-  def __init__(i, lo= 10**32, hi= -10**32): 
-    i.n,i.mu,i.m2,i.sd,i.lo,i.hi = 0,0,0,0,lo,hi
+  def __init__(i, inits=[],f=same,lo= 10**32, hi= -10**32): 
+    i.n,i.mu,i.m2,i.lo,i.hi = 0,0,0,lo,hi
+    [i + f(x) for x in inits]
   def __add__(i,x):
     i.n   += 1
     i.lo   = min(x, i.lo)  
@@ -99,6 +118,45 @@ class Table(o):
                     reverse= True,
                     key= lambda z: z.dom) 
     print([row.dom for row in i.rows])
+
+def splits(lst, epsilon=None, few=None, x=same, y=same):
+  return splits1( x, 
+                  y, 
+                  0, 
+                  len(lst), 
+                  sorted(lst, key=x), 
+                  epsilon or Num(inits=lst,f=x).sd()*THE.cohen,
+                  few or len(lst)**THE.power)
+
+def splits1(x, y, lo, hi, lst, epsilon, few):
+  m     = lo + (hi - lo) // 2
+  stats = Num( lst[lo:hi], f=y )
+  node  = o(value=stats, key=m, left=None, right=None) 
+  while m < hi and x( lst[m] ) == x( lst[m+1] ): 
+    m += 1
+  if hi - m >= few:
+    if m - lo >= few:  
+      if x( lst[hi-1] ) - x( lst[m] ) > epsilon:
+        if x( lst[m] )  - x( lst[lo] ) > epsilon:
+          node.key   = m
+          node.left  = splits1(x, y, lo,   m, lst, epsilon, few)
+          node.right = splits1(x, y, m+1, hi, lst, epsilon, few)
+  return node
+ 
+def _split():
+  a= lambda: random.gauss(2,1)
+  b= lambda: random.gauss(5,1)
+  c= lambda: random.gauss(8,1)
+  d= lambda: random.gauss(12,1)
+  e= lambda: random.gauss(15,1)
+  f= lambda: random.gauss(18,1)
+  data=[]
+  for _ in range(10**4):
+    data += [a(),b(),c(),d(),e(),f()]
+  f= lambda z: round(z,1)
+  showt( splits(data),val=lambda z : (f(z.lo),f(z.hi)))
+
+_split()
 
 ########################################
 def choice(lst,items):
