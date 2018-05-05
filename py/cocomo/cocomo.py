@@ -120,16 +120,17 @@ class Table(o):
     print([row.dom for row in i.rows])
 
 def splits(lst, epsilon=None, few=None, x=same, y=same):
+  X = lambda z: x(lst[z])
   def worker(lo, hi):
     m     = lo + (hi - lo) // 2
     stats = Num( lst[lo:hi], f=y )
     node  = o(value=stats, key=m, use=True, left=None, right=None) 
-    while m < hi and x( lst[m] ) == x( lst[m+1] ): 
+    while m < hi and X(m) == X(m+1): 
       m += 1
     if hi - m >= few:
       if m - lo >= few:  
-        if x( lst[hi-1] ) - x( lst[m] ) > epsilon:
-          if x( lst[m] )  - x( lst[lo] ) > epsilon:
+        if X(hi-1) - X(m) > epsilon:
+          if X(m)  - X(lo) > epsilon:
             node.key   = m
             node.left  = worker(lo,   m)
             node.right = worker(m+1, hi)
