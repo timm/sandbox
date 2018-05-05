@@ -23,7 +23,11 @@ class o:
 
 def showt(t, tab="|..", pre="",lvl=0,val=lambda z: ""):
   if t:
-    print(tab*lvl + pre + str( t.key or "" ) + ". " + str(val(t.value)))
+    print(    tab*lvl         +  \
+              pre             +   \
+              str( t.key or "" ) + \
+              ". "               +  \
+              str(val(t.value)))
     showt(t.left,  tab, "< ", lvl+1, val)
     showt(t.right, tab, "> ", lvl+1, val)
 
@@ -73,8 +77,8 @@ class Sym(o):
     return k
 
 class Col(o):
-  def __init__(i,pos, txt): 
-    i.pos, i.txt, i.has, i.w = pos, txt, None, -1
+  def __init__(i,t,pos, txt): 
+    i._table, i.pos, i.txt, i.has, i.w = t, pos, txt, None, -1
   def __add__(i,x):
     if x is not THE.skip:
       i.has = i.has or (Num() if nump(x) else Sym())
@@ -101,7 +105,7 @@ class Table(o):
     i.rows = [ Row(row,i) for row in rows ]
     i.dominates()
   def words2cols(i, lst ):
-    cols   = [ Col(j,x) for j,x in enumerate(lst) if x[0] != "?" ]
+    cols   = [ Col(i,j,x) for j,x in enumerate(lst) if x[0] != "?" ]
     i.less = [ c for c in cols if c.txt[0] == "<"      ]
     i.more = [ c for c in cols if c.txt[0] == ">"      ]
     i.ins  = [ c for c in cols if c.txt[0] not in "<>" ]
@@ -119,28 +123,32 @@ class Table(o):
                     key= lambda z: z.dom) 
     print([row.dom for row in i.rows])
 
+# bad and dual kids
+
 def splits(lst, epsilon=None, few=None, x=same, y=same):
-  X = lambda z: x(lst[z])
-  def worker(lo, hi):
+  def X(z): return x(lst[z])
+  def worker(lo, hi, parent):
     m     = lo + (hi - lo) // 2
-    stats = Num( lst[lo:hi], f=y )
-    node  = o(value=stats, key=m, use=True, left=None, right=None) 
+    xstats = Num( lst[lo:hi], f=x )
+    ystats = Num( lst[lo:hi], f=y )
+    node  = o(x=xstats, y=ystats, _parent=parent, key=m, use=True, 
+              left=None, right=None) 
     while m < hi and X(m) == X(m+1): 
       m += 1
+    node.key = m
     if hi - m >= few:
-      if m - lo >= few:  
-        if X(hi-1) - X(m) > epsilon:
-          if X(m)  - X(lo) > epsilon:
-            node.key   = m
-            node.left  = worker(lo,   m)
-            node.right = worker(m+1, hi)
-            return node
+      if X(hi-1) - X(m) > epsilon:
+        node.left  = worker(lo,   m, node)
+    if m - lo >= few:  
+      if X(m)  - X(lo) > epsilon:
+        node.right = worker(m+1, hi, node)
+    if node.left or node.right:
+      return node
   # main ------------------
   epsilon = epsilon or Num(inits=lst,f=x).sd()*THE.cohen
   few     = few     or len(lst)**THE.power
   lst     = sorted(lst, key=x)
-  return worker( 0, len(lst) ) 
-
+  return worker( 0, len(lst), None ) 
    
 def _split():
   seed(1)
