@@ -23,11 +23,7 @@ class o:
 
 def showt(t, tab="|..", pre="",lvl=0,val=lambda z: ""):
   if t:
-    print(    tab*lvl         +  \
-              pre             +   \
-              str( t.key or "" ) + \
-              ". "               +  \
-              str(val(t.value)))
+    print( tab*lvl + pre + str( val(t) ))
     showt(t.left,  tab, "< ", lvl+1, val)
     showt(t.right, tab, "> ", lvl+1, val)
 
@@ -125,34 +121,64 @@ class Table(o):
 
 # bad and dual kids
 
+def nodes(t):
+  if t:
+    yield t
+    for kid in [t.left, t.right]:
+      for z in nodes(kid):
+        yield z
+
 def splits(lst, epsilon=None, few=None, x=same, y=same):
-  def X(z): return x(lst[z])
-  def worker(lo, hi, parent):
-    m     = lo + (hi - lo) // 2
-    xstats = Num( lst[lo:hi], f=x )
-    ystats = Num( lst[lo:hi], f=y )
-    node  = o(x=xstats, y=ystats, _parent=parent, key=m, use=True, 
-              left=None, right=None) 
-    while m < hi and X(m) == X(m+1): 
-      m += 1
-    node.key = m
-    if hi - m >= few:
-      if X(hi-1) - X(m) > epsilon:
-        node.left  = worker(lo,   m, node)
-    if m - lo >= few:  
-      if X(m)  - X(lo) > epsilon:
-        node.right = worker(m+1, hi, node)
-    if node.left or node.right:
-      return node
+  def val(j): return x( lst[j] )
+  def worker(lo, hi, parent, lvl):
+    m1 = m2 = m = lo + (hi - lo) // 2
+    while m1 < hi-1 and val(m1) == val(m1+1): m1 += 1
+    while m2 > 0    and val(m2) == val(m2-1): m2 -= 1
+    m = m1 if (m1 - m) < (m - m2) else m2
+    node = o(x= Num( lst[lo:hi], f=x ),
+             y= Num( lst[lo:hi], f=y ),
+             level=lvl,
+             _parent=parent, cut=-1, left=None, right=None) 
+    if hi - lo > few:
+      if val(hi-1) - val(lo) > epsilon:
+        if m is not lo and m is not hi-1:
+          cuts.append(m)
+          node.cut=m
+          node.left  = worker(lo,  m, node, lvl+1)
+          node.right = worker(m,  hi, node, lvl+1)
+    return node
   # main ------------------
+  cuts    = []
   epsilon = epsilon or Num(inits=lst,f=x).sd()*THE.cohen
   few     = few     or len(lst)**THE.power
+  few     = max(few,THE.few)
   lst     = sorted(lst, key=x)
-  return worker( 0, len(lst), None ) 
-   
-def _split():
+  return cuts,worker( 0, len(lst), None, 0) 
+  
+def prune(t):
+  if t and t.left and t.right:
+    all = t.y
+    lhs = t.left.y
+    rhs = t.right.y
+    b4  = all.sd()
+    now = (lhs.n * lhs.sd() + rhs.n * rhs.sd())/all.n
+    if now >= b4: 
+      t.left = t.right = None
+    else:
+      prune(t.left)
+      prune(t.right)
+  return t
+    
+def show001(i):
+  f= lambda z: round(z,1)
+  return o(cut = f(i.cut), 
+            n  = f(i.x.n), 
+            lo = f(i.x.lo), 
+            hi = f(i.x.hi))
+
+def _split1():
   seed(1)
-  f= lambda z: round(z,4)
+  f= lambda z: round(z,1)
   a= lambda: f(random.gauss(2,1))
   b= lambda: f(random.gauss(5,1))
   c= lambda: f(random.gauss(8,1))
@@ -161,9 +187,37 @@ def _split():
   data=[]
   for _ in range(100):
     data += [a(),b(),c(),d(),e()]
-  showt( splits(data),val=lambda z : (f(z.n), f(z.lo),f(z.hi)))
+  cuts, tree = splits(data)
+  showt( tree, val=show001 )
+  print("")
+  tree = prune(t)
+  showt( tree, val=show001 )
 
-_split()
+# why this not giving me large x deltas
+def _split2():
+  seed(1)
+  def ff(x): return round(x,2)
+  def f(z): return (z,100,200,g(z))
+  def g(z): return z
+    #if z < 0.1: return 0.1
+    #if z < 0.6: return 0.6
+    #return 1
+  a= lambda: f(r()**3)
+  data = [a() for _ in range(1000)]
+  show = lambda _ : o(cut = f(_.cut), 
+                      n   = f(_.x.n), 
+                      lo  = f(_.x.lo), 
+                      hi  = f(_.x.hi))
+  cuts, tree = splits(data,x=first,y=last,epsilon=0.2)
+  showt( tree, val=show001  )
+  print("")
+  tree = prune(tree)
+  showt( tree, val=show001 )
+  for x in sorted([(ff(n.x.mu),ff(n.y.mu)) for n in nodes(tree)]):
+    print(x)
+
+#_split1()
+_split2()
 
 ########################################
 def choice(lst,items):
