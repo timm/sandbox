@@ -1,7 +1,6 @@
 import random
-any = random.choice
 
-def X(y)   : return y() if callable(y) else y
+def X(y) : return y() if callable(y) else y
 
 class Var:
   all = []
@@ -19,12 +18,12 @@ class Var:
   def __ge__(i,j)      : return X(i) >= X(j)
   def __ne__(i,j)      : return X(i) != X(j)
   def __eq__(i,j)      : return X(i) == X(j)
-  def __add__(i,j)     : return X(i) + X(j)
-  def __sub__(i,j)     : return X(i) - X(j)
-  def __mul__(i,j)     : return X(i) * X(j)
-  def __mod__(i,j)     : return X(i) % X(j)
+  def __add__(i,j)     : return X(i) +  X(j)
+  def __sub__(i,j)     : return X(i) -  X(j)
+  def __mul__(i,j)     : return X(i) *  X(j)
+  def __mod__(i,j)     : return X(i) %  X(j)
   def __pow__(i,j)     : return X(i) ** X(j)
-  def __truediv__(i,j) : return X(i) / X(j)
+  def __truediv__(i,j) : return X(i) /  X(j)
   def __floordiv__(i,j): return X(i) // X(j)
   def any(i,x) : return random.choice(list(i.cache.items()))[1]
   def reset(i) : return Cache(i.any)
