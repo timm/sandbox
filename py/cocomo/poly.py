@@ -3,37 +3,23 @@ any = random.choice
 
 _  = None
 
-def val(x):
-  return x() if callable(x) else x
-
-"XXXX i've lst access there to the actual tuning vals. bad me"
-
 class Var:
   all = []
   def __init__(i, txt, vals) :
     i.txt   = txt
-    i.vaks  = vals
+    i.vals  = vals
     i.cache = None
     Var.all += [i]
   def __call__(i):
     if i.cache is None:
-      i.cache = i.vals[ any(
-          return i.val()
-  def __lt__(i,j): return val(i) <  val(j)
-  def __gt__(i,j): return val(i) >  val(j)
-  def __le__(i,j): return val(i) <= val(j)
-  def __ge__(i,j): return val(i) >= val(j)
-
-class Cache:
-  def __init__(i, make):
-    i.make, i.cache = make, None
-    Cache.all += [i]
-  def __call__():
-    if i.cache is None:
-      i.cache = i.make()
+      i.cache = any(i.vals)
     return i.cache
-  def reset(): 
-    i.cache = None
+  def val(i,x):
+    return x() if callable(x) else x
+  def __lt__(i,j): return i.val(i) <  i.val(j)
+  def __gt__(i,j): return i.val(i) >  i.val(j)
+  def __le__(i,j): return i.val(i) <= i.val(j)
+  def __ge__(i,j): return i.val(i) >= i.val(j)
 
 def tunings( lst = [[
   #       vlow  low   nom   high  vhigh xhigh
@@ -66,7 +52,7 @@ def tunings( lst = [[
       if x is not _: break
     for tmp,x in enumerate(all):
       if x is not _: hi=tmp
-    return [x for x in range(lo,hi+1)]
+    return [all[x] for x in range(lo,hi+1)]
   return [Var( t[0], vals(t[1:]) ) for t in lst]
 
 def COCOMO2(project, a=2.94, b=0.91, tunes=Coc2tunings): # defaults
