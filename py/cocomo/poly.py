@@ -33,10 +33,12 @@ def tunings(_=None):
 def COCOMO2(project, a=2.94, b=0.91, tunes=vars): # defaults
   sfs, ems, kloc = 0,1,22
   scaleFactors, effortMultipliers = 5, 17 
-  for i in range(scaleFactors):
-    sfs += tunes[i][project[i]]
-  for i in range(effortMultipliers):
-     j = i + scaleFactors
+  scalep= lambda z: z[0].isUpper()
+  for k,v in vars.items():
+    if scalep(k):
+      sfs += v
+    else
+      j = i + scaleFactors
   ems *= tunes[j][project[j]]
   return a * ems * project[kloc] ** (b + 0.01*sfs)
 
