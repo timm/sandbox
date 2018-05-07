@@ -1,28 +1,47 @@
 import random
 any = random.choice
 
-_  = None
+def X(y)   : return y() if callable(y) else y
 
 class Var:
   all = []
   def __init__(i, txt, vals) :
-    i.txt   = txt
-    i.vals  = vals
-    i.cache = None
     Var.all += [i]
-  def __call__(i):
-    if i.cache is None:
-      i.cache = any(i.vals)
-    return i.cache
-  def val(i,x):
-    return x() if callable(x) else x
-  def __lt__(i,j): return i.val(i) <  i.val(j)
-  def __gt__(i,j): return i.val(i) >  i.val(j)
-  def __le__(i,j): return i.val(i) <= i.val(j)
-  def __ge__(i,j): return i.val(i) >= i.val(j)
+    i.txt,i.vals = txt,vals
+    i.cache = i.reset()
+  def __call__(i)      : return i.cache()
+  def __neg__(i)       : return -1*X(i)
+  def __pos__(i)       : return +1*X(i)
+  def __abs__(i)       : return abs(X(i))
+  def __lt__(i,j)      : return X(i) <  X(j)
+  def __gt__(i,j)      : return X(i) >  X(j)
+  def __le__(i,j)      : return X(i) <= X(j)
+  def __ge__(i,j)      : return X(i) >= X(j)
+  def __ne__(i,j)      : return X(i) != X(j)
+  def __eq__(i,j)      : return X(i) == X(j)
+  def __add__(i,j)     : return X(i) + X(j)
+  def __sub__(i,j)     : return X(i) - X(j)
+  def __mul__(i,j)     : return X(i) * X(j)
+  def __mod__(i,j)     : return X(i) % X(j)
+  def __pow__(i,j)     : return X(i) ** X(j)
+  def __truediv__(i,j) : return X(i) / X(j)
+  def __floordiv__(i,j): return X(i) // X(j)
+  def any(i,x) : return random.choice(list(i.cache.items()))[1]
+  def reset(i) : return Cache(i.any)
 
-def tunings( lst = [[
-  #       vlow  low   nom   high  vhigh xhigh
+class Cache():
+  def __init__(i, fun): 
+    i.kept, i.fun = None,fun
+  def __call__(i):  
+    i.kept = i.kept if i.kept is not None else fun()
+    return i.kept
+
+def tunings():
+  _ = None
+  return [Var( t[0], 
+              {n:x for n, x in enumerate(t[1:]) if x is not _} )
+          for t in [[
+#       vlow  low   nom   high  vhigh xhigh
   # scale factors:
   'Flex', 5.07, 4.05, 3.04, 2.03, 1.01,    _],[ 
   'Pmat', 7.80, 6.24, 4.68, 3.12, 1.56,    _],[ 
@@ -46,14 +65,8 @@ def tunings( lst = [[
   'site', 1.22, 1.09, 1.00, 0.93, 0.86, 0.80],[
   'stor',   _,    _, 1.00, 1.05, 1.17,  1.46],[
   'time',   _,    _, 1.00, 1.11, 1.29,  1.63],[
-  'tool',1.17, 1.09, 1.00, 0.90, 0.78,     _]]):
-  def vals(all, tmp=None):
-    for lo, x in enumerate(all):
-      if x is not _: break
-    for tmp,x in enumerate(all):
-      if x is not _: hi=tmp
-    return [all[x] for x in range(lo,hi+1)]
-  return [Var( t[0], vals(t[1:]) ) for t in lst]
+  'tool',1.17, 1.09, 1.00, 0.90, 0.78,     _]
+  ]]
 
 def COCOMO2(project, a=2.94, b=0.91, tunes=Coc2tunings): # defaults
   sfs, ems, kloc = 0,1,22
