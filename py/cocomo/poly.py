@@ -1,29 +1,44 @@
-_  = None
-class Var:
-  def __init__(i,*lst):
-    i.txt, all, tmp = lst[0], lst[1:], None
-    for lo, x in enumerate(all):
-      if x is not _: break
-    for tmp,x in enumerate(all):
-      if x is not _: hi=tmp
-    i.vals = [x for x in range(lo,hi+1)]
-  def any():
-    return i.vals[ random.choice(i.vals) ]
+import random
+any = random.choice
 
-class Cache:
+_  = None
+
+def prep(all, tmp=None):
+  for lo, x in enumerate(all):
+    if x is not _: break
+  for tmp,x in enumerate(all):
+    if x is not _: hi=tmp
+  return [x for x in range(lo,hi+1)]
+
+def val(x):
+  return x() if callable(x) else x
+
+class Var:
   all = []
   @staticmethod
   def zap(): 
-    Cache.all = []
-  def reset(): 
-    for one in Cache.all: one.cached = None
+    Var.all = []
+  def __init__(i, txt, *lst):
+    i.txt   = txt
+    i.range = prep(lst)
+    i.val   = Cache( lambda: i.range[ any(i.vals) ])
+  def __call__(i):
+    return i.val()
+  def __lt__(i,j): return val(i) <  val(j)
+  def __gt__(i,j): return val(i) >  val(j)
+  def __le__(i,j): return val(i) <= val(j)
+  def __ge__(i,j): return val(i) >= val(j)
+
+class Cache:
   def __init__(i, make):
     i.make, i.cached = make, None
     Cache.all += [i]
   def __call__():
-    if i.cached == None:
+    if i.cached is None:
       i.cached = i.make()
     return i.cached
+  def reset(): 
+    i.cached = None
 
 Coc2tunings = [[
   #       vlow  low   nom   high  vhigh xhigh
