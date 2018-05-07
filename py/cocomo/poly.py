@@ -43,6 +43,7 @@ def COCOMO2(project, a=2.94, b=0.91, tunes=vars): # defaults
 #####################################################
 
 def X(y)  : return y() if callable(y) else y
+
 def any(d): return random.choice(list(d.items()))[1]
 
 def prep(lst): 
@@ -80,5 +81,5 @@ class Cache():
   def __init__(i, fun): 
     i.kept, i.fun = None,fun
   def __call__(i):  
-    i.kept = i.kept if i.kept is not None else fun()
+    i.kept = i.kept if i.kept is not None else X(i.fun)
     return i.kept
