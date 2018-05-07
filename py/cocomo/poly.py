@@ -2,12 +2,16 @@ import random
 
 def X(y) : return y() if callable(y) else y
 
+def any(d): return random.choice(list(d.items()))[1]
+
 class Var:
   all = []
   def __init__(i, txt, vals) :
     Var.all += [i]
     i.txt,i.vals = txt,vals
     i.cache = i.reset()
+  def reset(i)         : return Cache(i.any)
+  def any(i)           : return any(i.vals)
   def __call__(i)      : return i.cache()
   def __neg__(i)       : return -1*X(i)
   def __pos__(i)       : return +1*X(i)
@@ -25,8 +29,6 @@ class Var:
   def __pow__(i,j)     : return X(i) ** X(j)
   def __truediv__(i,j) : return X(i) /  X(j)
   def __floordiv__(i,j): return X(i) // X(j)
-  def any(i,x) : return random.choice(list(i.cache.items()))[1]
-  def reset(i) : return Cache(i.any)
 
 class Cache():
   def __init__(i, fun): 
@@ -38,9 +40,9 @@ class Cache():
 def tunings():
   _ = None
   return [Var( t[0], 
-              {n:x for n, x in enumerate(t[1:]) if x is not _} )
+              {n:x for n, x in enumerate(t[1:]) if x} )
           for t in [[
-#       vlow  low   nom   high  vhigh xhigh
+  #       vlow  low   nom   high  vhigh xhigh
   # scale factors:
   'Flex', 5.07, 4.05, 3.04, 2.03, 1.01,    _],[ 
   'Pmat', 7.80, 6.24, 4.68, 3.12, 1.56,    _],[ 
