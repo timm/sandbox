@@ -3,27 +3,22 @@ any = random.choice
 
 _  = None
 
-def prep(all, tmp=None):
-  for lo, x in enumerate(all):
-    if x is not _: break
-  for tmp,x in enumerate(all):
-    if x is not _: hi=tmp
-  return [x for x in range(lo,hi+1)]
-
 def val(x):
   return x() if callable(x) else x
 
+"XXXX i've lst access there to the actual tuning vals. bad me"
+
 class Var:
   all = []
-  @staticmethod
-  def zap(): 
-    Var.all = []
-  def __init__(i, txt, *lst):
+  def __init__(i, txt, vals) :
     i.txt   = txt
-    i.range = prep(lst)
-    i.val   = Cache( lambda: i.range[ any(i.vals) ])
+    i.vaks  = vals
+    i.cache = None
+    Var.all += [i]
   def __call__(i):
-    return i.val()
+    if i.cache is None:
+      i.cache = i.vals[ any(
+          return i.val()
   def __lt__(i,j): return val(i) <  val(j)
   def __gt__(i,j): return val(i) >  val(j)
   def __le__(i,j): return val(i) <= val(j)
@@ -31,16 +26,16 @@ class Var:
 
 class Cache:
   def __init__(i, make):
-    i.make, i.cached = make, None
+    i.make, i.cache = make, None
     Cache.all += [i]
   def __call__():
-    if i.cached is None:
-      i.cached = i.make()
-    return i.cached
+    if i.cache is None:
+      i.cache = i.make()
+    return i.cache
   def reset(): 
-    i.cached = None
+    i.cache = None
 
-Coc2tunings = [[
+def tunings( lst = [[
   #       vlow  low   nom   high  vhigh xhigh
   # scale factors:
   'Flex', 5.07, 4.05, 3.04, 2.03, 1.01,    _],[ 
@@ -65,9 +60,14 @@ Coc2tunings = [[
   'site', 1.22, 1.09, 1.00, 0.93, 0.86, 0.80],[
   'stor',   _,    _, 1.00, 1.05, 1.17,  1.46],[
   'time',   _,    _, 1.00, 1.11, 1.29,  1.63],[
-  'tool',1.17, 1.09, 1.00, 0.90, 0.78,     _]]
- 
-[Var(*l) for l in Coc2tunings]
+  'tool',1.17, 1.09, 1.00, 0.90, 0.78,     _]]):
+  def vals(all, tmp=None):
+    for lo, x in enumerate(all):
+      if x is not _: break
+    for tmp,x in enumerate(all):
+      if x is not _: hi=tmp
+    return [x for x in range(lo,hi+1)]
+  return [Var( t[0], vals(t[1:]) ) for t in lst]
 
 def COCOMO2(project, a=2.94, b=0.91, tunes=Coc2tunings): # defaults
   sfs, ems, kloc = 0,1,22
