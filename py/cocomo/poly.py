@@ -1,8 +1,6 @@
 import random
 
-_ = None
-
-def tunings():
+def tunings(_=None):
   return [prep(lst) for lst in [[
   #       vlow  low   nom   high  vhigh xhigh
   # scale factors:
