@@ -1,7 +1,7 @@
 import random
 
-def tunings(_=None):
-  return [prep(lst) for lst in [[
+def tunings(_ = None):
+  return prep([
   #       vlow  low   nom   high  vhigh xhigh
   # scale factors:
   'Flex', 5.07, 4.05, 3.04, 2.03, 1.01,    _],[ 
@@ -19,48 +19,46 @@ def tunings(_=None):
   'pcap', 1.34, 1.15, 1.00, 0.88, 0.76,    _],[
   'pcon', 1.29, 1.12, 1.00, 0.90, 0.81,    _],[
   'plex', 1.19, 1.09, 1.00, 0.91, 0.85,    _],[
-  'pvol',   _, 0.87, 1.00, 1.15, 1.30,     _],[
+  'pvol',    _, 0.87, 1.00, 1.15, 1.30,    _],[
   'rely', 0.82, 0.92, 1.00, 1.10, 1.26,    _],[
-  'ruse',   _, 0.95, 1.00, 1.07, 1.15,  1.24],[
+  'ruse',    _, 0.95, 1.00, 1.07, 1.15, 1.24],[
   'sced', 1.43, 1.14, 1.00, 1.00, 1.00,    _],[
   'site', 1.22, 1.09, 1.00, 0.93, 0.86, 0.80],[
-  'stor',   _,    _, 1.00, 1.05, 1.17,  1.46],[
-  'time',   _,    _, 1.00, 1.11, 1.29,  1.63],[
-  'tool',1.17, 1.09, 1.00, 0.90, 0.78,     _]
-  ]]
+  'stor',    _,    _, 1.00, 1.05, 1.17, 1.46],[
+  'time',    _,    _, 1.00, 1.11, 1.29, 1.63],[
+  'tool', 1.17, 1.09, 1.00, 0.90, 0.78,    _])
 
-#interesting... how to map
-def COCOMO2(project, a=2.94, b=0.91, tunes=vars): # defaults
-  sfs, ems, kloc = 0,1,22
-  scaleFactors, effortMultipliers = 5, 17 
-  scalep= lambda z: z[0].isUpper()
-  for k,v in vars.items():
-    if scalep(k):
-      sfs += v
-    else
-      j = i + scaleFactors
-  ems *= tunes[j][project[j]]
-  return a * ems * project[kloc] ** (b + 0.01*sfs)
-
+def COCOMO2(project, t, a=2.94, b=0.91, e=2.7182818285):
+  em  =  t.acap() * t.aexp() * t.cplx() * t.data() * t.docu() * \
+         t.ltex() * t.pcap() * t.pcon() * t.plex() * t.pvol() *  \
+         t.rely() * t.ruse() * t.sced() * t.site() * t.stor() *   \
+         t.time() * t.tool() 
+  sf  =  t.flex() + t.pmat() + t.prec() + t.resl() + t.team()
+  return a*em*loc()**(b+ 0.01*sf)
+  
 #####################################################
+class o:
+  def __init__(i, **d): i.__dict__.update(d)
 
-def X(y)  : return y() if callable(y) else y
+def X(y): return y() if callable(y) else y
 
-def any(d): return random.choice(list(d.items()))[1]
+def any(me,d1,d2): 
+  keys = d2[me] if me in d2 else list(d1.keys())
+  return d1[ any(keys) ]
 
-def prep(lst): 
-  return Var(lst[0], 
-             {n:x for n, x in enumerate(lst[1:]) if x}
-            )
+def prep(*rows):
+  return o({ row[0]:x for x in 
+           [ Var(row[0],row[1:]) for row in rows] })
 
 class Var:
-  all = []
+  all     = []
+  context = {}
   def __init__(i, txt, vals) :
     Var.all += [i]
-    i.txt,i.vals = txt,vals
-    i.cache = i.reset()
-  def reset(i)         : return Cache(i.any)
-  def any(i)           : return any(i.vals)
+    i.txt,i.vals = txt, {n:x for n,x in enumerate(vals) if x}
+    i.reset()
+  def reset(i)         : i.cache = Cache(i.any)
+  def any(i)           : return any(txt, i.vals, Var.context)
   def __call__(i)      : return i.cache()
   def __neg__(i)       : return -1*X(i)
   def __pos__(i)       : return +1*X(i)
