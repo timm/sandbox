@@ -78,22 +78,17 @@ class Within(Var):
     super().__init__(txt)
     i.lo, i.hi = lo,hi
   def xplain(i,x): return x
-  def any1(i): 
-    return random.uniform(i.lo, i.hi)
-  def __repr__(i):
-    return '<%s %s to %s>' % (i.txt, i.lo, i.hi)
+  def any1(i)    : return random.uniform(i.lo, i.hi)
+  def __repr__(i): return '<%s %s to %s>' % (i.txt, i.lo, i.hi)
 
 class OneOf(Var):
   def __init__(i,txt,lst):
     super().__init__(txt)
     i.d    = {n:x      for n,x in enumerate(lst) if x}
     i.show = {i.d[x]:x for x   in i.d}
-  def xplain(i,x):
-    return i.show[x]
-  def any1(i):
-    return i.d[ random.choice(list(i.d.keys())) ]
-  def __repr__(i):
-    return '<%s %s>' % (i.txt, list(i.d.keys()))
+  def xplain(i,x): return i.show[x]
+  def any1(i)    : return i.d[ random.choice(list(i.d.keys())) ]
+  def __repr__(i): return '<%s %s>' % (i.txt, list(i.d.keys()))
 
 class Cache():
   def __init__(i, fun): 
