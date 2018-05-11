@@ -1,7 +1,8 @@
 import random
 
 def tunings(_ = None):
-  return prep([
+  Within(txt="loc", lo=2, hi=2000)
+  prep([
   #       vlow  low   nom   high  vhigh xhigh
   # scale factors:
   'Flex', 5.07, 4.05, 3.04, 2.03, 1.01,    _],[ 
@@ -29,36 +30,31 @@ def tunings(_ = None):
   'tool', 1.17, 1.09, 1.00, 0.90, 0.78,    _])
 
 def COCOMO2(project, t, a=2.94, b=0.91, e=2.7182818285):
-  em  =  t.acap() * t.aexp() * t.cplx() * t.data() * t.docu() * \
-         t.ltex() * t.pcap() * t.pcon() * t.plex() * t.pvol() *  \
-         t.rely() * t.ruse() * t.sced() * t.site() * t.stor() *   \
-         t.time() * t.tool() 
-  sf  =  t.flex() + t.pmat() + t.prec() + t.resl() + t.team()
+  em = t.acap() * t.aexp() * t.cplx() * t.data() * t.docu() * \
+       t.ltex() * t.pcap() * t.pcon() * t.plex() * t.pvol() *  \
+       t.rely() * t.ruse() * t.sced() * t.site() * t.stor() *   \
+       t.time() * t.tool() 
+  sf = t.flex() + t.pmat() + t.prec() + t.resl() + t.team()
   return a*em*loc()**(b+ 0.01*sf)
-  
+ 
 #####################################################
 class o:
   def __init__(i, **d): i.__dict__.update(d)
 
 def X(y): return y() if callable(y) else y
 
-def any(me,d1,d2): 
-  keys = d2[me] if me in d2 else list(d1.keys())
-  return d1[ any(keys) ]
-
 def prep(*rows):
-  return o({ row[0]:x for x in 
-           [ Var(row[0],row[1:]) for row in rows] })
+  [ OneOf(row[0],row[1:]) for row in rows]
 
 class Var:
-  all     = []
-  context = {}
-  def __init__(i, txt, vals) :
-    Var.all += [i]
-    i.txt,i.vals = txt, {n:x for n,x in enumerate(vals) if x}
+  all = o()
+  def __init__(i, txt) :
+    Var.all.__dict__[txt] = i
+    i.txt = txt
+    i.local = None
     i.reset()
-  def reset(i)         : i.cache = Cache(i.any)
-  def any(i)           : return any(txt, i.vals, Var.context)
+  def reset(i): i.cache = Cache(i.any)
+  def any(i): return random.choice(i.local) if i.local else i.any1()
   def __call__(i)      : return i.cache()
   def __neg__(i)       : return -1*X(i)
   def __pos__(i)       : return +1*X(i)
@@ -77,9 +73,38 @@ class Var:
   def __truediv__(i,j) : return X(i) /  X(j)
   def __floordiv__(i,j): return X(i) // X(j)
 
+class Within(Var):
+  def __init__(i, txt, lo=0, hi=1):
+    super().__init__(txt)
+    i.lo, i.hi = lo,hi
+  def xplain(i,x): return x
+  def any1(i): 
+    return random.uniform(i.lo, i.hi)
+  def __repr__(i):
+    return '<%s %s to %s>' % (i.txt, i.lo, i.hi)
+
+class OneOf(Var):
+  def __init__(i,txt,lst):
+    super().__init__(txt)
+    i.d    = {n:x      for n,x in enumerate(lst) if x}
+    i.show = {i.d[x]:x for x   in i.d}
+  def xplain(i,x):
+    return i.show[x]
+  def any1(i):
+    return i.d[ random.choice(list(i.d.keys())) ]
+  def __repr__(i):
+    return '<%s %s>' % (i.txt, list(i.d.keys()))
+
 class Cache():
   def __init__(i, fun): 
     i.kept, i.fun = None,fun
   def __call__(i):  
     i.kept = i.kept if i.kept is not None else X(i.fun)
     return i.kept
+
+tunings()
+random.seed(1)
+for _ in range(0,20):
+  Var.all.acap.reset()
+  print([Var.all.acap.xplain(Var.all.acap()) for _ in range(0,10)])
+

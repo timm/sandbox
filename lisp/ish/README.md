@@ -27,8 +27,8 @@ To write a file for `ISH`, add the following two lines as a header:
       #-base (load "base")
       (uses "other" "files" "to" "load")
 
-The first line loads ISH's `base` code (if it has not already been loaded.
-The second line loads all other files, but again, only if they have 
+- The first line loads ISH's `base` code (if it has not already been loaded.
+- The second line loads all other files, but again, only if they have 
 not been loaded before.
 
 ## Unit test files
@@ -50,8 +50,5 @@ create a file `Xok.lisp` whose first lines are:
 Nest, at the last line of the `Xok.lisp`, add this line:
 
     (tests)
-
-Finally, go to `tests.lisp` and add `Xok` to its list of
-files to load (at the top).
 
 Enjoy!
