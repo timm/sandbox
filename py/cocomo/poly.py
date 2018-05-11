@@ -105,6 +105,6 @@ class Cache():
 tunings()
 random.seed(1)
 for _ in range(0,20):
-  Var.all.acap.reset()
+  #Var.all.acap.reset()
   print([Var.all.acap.xplain(Var.all.acap()) for _ in range(0,10)])
 
