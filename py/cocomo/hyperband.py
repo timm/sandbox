@@ -18,37 +18,40 @@ def dom(r1,r2, lows,highs):
   return s1/n < s2/n
 
 def doms(lst):
-  def ranges(lst):
-    lo = [ 10**32 for _ in lst[0].y]
-    hi = [-10**32 for _ in lst[0].y]
-    for r1 in lst:
-      for n,obj in enumerate(r1.y):
-        lo[n] = min(obj, lo[n])
-        hi[n] = max(obj, hi[n])
-    return lo,hi  
   lows,highs = ranges(lst)
   for x in lst:
     for y in lst:
-      if dom(x,y,lows,highs):
-        x.dom += 1
+      if dom(x,y,lows,highs): x.dom += 1
   return lst
+
+def ranges(lst):
+  lo = [ 10**32 for _ in lst[0].y]
+  hi = [-10**32 for _ in lst[0].y]
+  for r1 in lst:
+    for n,x in enumerate(r1.y):
+      lo[n] = min(x, lo[n])
+      hi[n] = max(x, hi[n])
+  return lo,hi  
 
 class row:
   def __init__(i,x,y,w): 
     i.w,i.x,i.y,i.dom = w,x,y,0
+  def __lt__(i,j):
+    return i.dom < j.dom
 
-class xy:
-  def __init__(i,head,rows):
-    objs = [n for n,x in enumerate(head) if x[0] in '<>']
-    decs = [n for n,x in enumerate(head) if not n in objs]
-    i.weights =  [-1 if head[n][0]=="<" else 1 for n in objs]
-    i.rows = [ row([ x[n] for n in decs ], 
-                   [ x[n] for n in objs ], 
-                   i.weights) for x in rows]
-    doms(i.rows)
-    i.rows = sorted(i.rows, key=lambda z:z.dom)
-    for x in i.rows[:10]: print("<",x.y, x.dom)
-    for x in i.rows[-10:]: print(">",x.y, x.dom)
+def xy(head,rows):
+  objs = [n for n,x in enumerate(head) if x[0] in '<>']
+  decs = [n for n,x in enumerate(head) if not n in objs]
+  weights =  [-1 if head[n][0]=="<" else 1 for n in objs]
+  rows = [ row([ x[n] for n in decs ], 
+               [ x[n] for n in objs ], 
+               weights) for x in rows]
+  doms(rows)
+  rows = sorted(rows)
+  for x in rows[:10]: print("<",x.y, x.dom)
+  for x in rows[-10:]: print(">",x.y, x.dom)
+  for x in rows: print(int(x.dom),end=" ")
+
 xy(auto.data[0],auto.data[1:])
 
 # #rows have id and objs and __lt__
