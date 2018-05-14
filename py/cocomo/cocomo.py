@@ -147,6 +147,7 @@ def splits(lst, epsilon=None, few=None, x=same, y=same):
           left  = worker(lo,  m, node, lvl+1)
           right = worker(m,  hi, node, lvl+1)
           if left.cut and right.cut:
+            cuts += [m]
             node.left = left
             node.right = right
     return node
