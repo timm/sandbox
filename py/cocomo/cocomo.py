@@ -128,6 +128,7 @@ def nodes(t):
       for z in nodes(kid):
         yield z
 
+# needs to 
 def splits(lst, epsilon=None, few=None, x=same, y=same):
   def val(j): return x( lst[j] )
   def worker(lo, hi, parent, lvl):
@@ -138,14 +139,16 @@ def splits(lst, epsilon=None, few=None, x=same, y=same):
     node = o(x= Num( lst[lo:hi], f=x ),
              y= Num( lst[lo:hi], f=y ),
              level=lvl,
-             _parent=parent, cut=-1, left=None, right=None) 
+             _parent=parent, cut=None, left=None, right=None) 
     if hi - lo > few:
       if val(hi-1) - val(lo) > epsilon:
         if m is not lo and m is not hi-1:
-          cuts.append(m)
           node.cut=m
-          node.left  = worker(lo,  m, node, lvl+1)
-          node.right = worker(m,  hi, node, lvl+1)
+          left  = worker(lo,  m, node, lvl+1)
+          right = worker(m,  hi, node, lvl+1)
+          if left.cut and right.cut:
+            node.left = left
+            node.right = right
     return node
   # main ------------------
   cuts    = []
@@ -197,12 +200,12 @@ def _split1():
 def _split2():
   seed(1)
   def ff(x): return round(x,2)
-  def f(z): return (z,100,200,g(z))
+  def f(z): return (0 if z < 0.5 else z,10*g(z))
   def g(z): return z
     #if z < 0.1: return 0.1
     #if z < 0.6: return 0.6
     #return 1
-  a= lambda: f(r()**3)
+  a= lambda: f(r())
   data = [a() for _ in range(1000)]
   show = lambda _ : o(cut = f(_.cut), 
                       n   = f(_.x.n), 
@@ -213,8 +216,9 @@ def _split2():
   print("")
   tree = prune(tree)
   showt( tree, val=show001 )
-  for x in sorted([(ff(n.x.mu),ff(n.y.mu)) for n in nodes(tree)]):
-    print(x)
+  print(cuts)
+  #for x in sorted([(ff(n.x.mu),ff(n.y.mu)) for n in nodes(tree)]):
+   # print(x)
 
 #_split1()
 _split2()
