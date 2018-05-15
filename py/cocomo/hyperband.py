@@ -8,51 +8,57 @@ def bands(lst,n=3):
     i /= n
     r *= n
 
-def dom(r1,r2, lows,highs):
-  s1,s2,n,e,z = 0,0,len(r1.y),10,10**-32
-  for a,b,w,lo,hi in zip(r1.y,r2.y,r1.w,lows,highs):
-    a   = (a - lo) / (hi - lo + z)
-    b   = (b - lo) / (hi - lo + z)
-    s1 -= e**( w * (a-b)/n )
-    s2 -= e**( w * (b-a)/n )
-  return s1/n < s2/n
-
-def doms(lst):
-  lows,highs = ranges(lst)
-  for x in lst:
-    for y in lst:
-      if dom(x,y,lows,highs): x.dom += 1
-  return lst
-
-def ranges(lst):
-  lo = [ 10**32 for _ in lst[0].y]
-  hi = [-10**32 for _ in lst[0].y]
-  for r1 in lst:
-    for n,x in enumerate(r1.y):
-      lo[n] = min(x, lo[n])
-      hi[n] = max(x, hi[n])
-  return lo,hi  
-
-class row:
+class Row:
   def __init__(i,x,y,w): 
     i.w,i.x,i.y,i.dom = w,x,y,0
   def __lt__(i,j):
     return i.dom < j.dom
+  def dominates(i,j,lows,highs):
+    s1,s2,n,e,z = 0,0,len(i.y),10,10**-32
+    for a,b,w,lo,hi in zip(i.y, j.y,
+                           i.w, lows, highs):
+      a   = (a - lo) / (hi - lo + z)
+      b   = (b - lo) / (hi - lo + z)
+      s1 -= e**( w * (a-b)/n )
+      s2 -= e**( w * (b-a)/n )
+    return s1/n < s2/n
+  
+class Table:
+  def __init__(i,head,rows):
+    objs,decs,weights = i.meta(head)
+    rows = [ Row([ row[n] for n in decs ], 
+                 [ row[n] for n in objs ], 
+                 weights) for row in rows ]
+    lows, highs = i.ranges(rows)
+    i.doms(rows, lows, highs)
+    i.report(sorted(rows))
+  def meta(i, head):
+    objs = [n for n,x in enumerate(head) if x[0] in '<>']
+    decs = [n for n,x in enumerate(head) if not n in objs]
+    weights =  [-1 if head[n][0]=="<" else 1 for n in objs]
+    return objs,decs,weights
+  def doms(i,lst, lows, highs):
+    for row1 in lst:
+      for row2 in lst:
+        if row1.dominates(row2,lows,highs): 
+          row1.dom += 1
+  def ranges(i,lst):
+    lo = [ 10**32 for _ in lst[0].y]
+    hi = [-10**32 for _ in lst[0].y]
+    for r1 in lst:
+      for n,x in enumerate(r1.y):
+        lo[n] = min(x, lo[n])
+        hi[n] = max(x, hi[n])
+    return lo,hi  
+  def report(i, rows):
+    for x in rows[:10]: print("<",x.y, x.dom)
+    for x in rows[-10:]: print(">",x.y, x.dom)
 
-def xy(head,rows):
-  objs = [n for n,x in enumerate(head) if x[0] in '<>']
-  decs = [n for n,x in enumerate(head) if not n in objs]
-  weights =  [-1 if head[n][0]=="<" else 1 for n in objs]
-  rows = [ row([ x[n] for n in decs ], 
-               [ x[n] for n in objs ], 
-               weights) for x in rows]
-  doms(rows)
-  rows = sorted(rows)
-  for x in rows[:10]: print("<",x.y, x.dom)
-  for x in rows[-10:]: print(">",x.y, x.dom)
-  for x in rows: print(int(x.dom),end=" ")
+class Rules:
+  def __init__(i,data):
+    t = Table(data[0], data[1:])
 
-xy(auto.data[0],auto.data[1:])
+Rules(auto.data)
 
 # #rows have id and objs and __lt__
 # def chunkify(lst):
