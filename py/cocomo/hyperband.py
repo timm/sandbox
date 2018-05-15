@@ -8,7 +8,23 @@ def bands(lst,n=3):
     i /= n
     r *= n
 
-class Row:
+def kv(d,keys=None, decimals=3):
+   "print dictionary, in key sort order"
+   keys = keys or sorted(list(d.keys()))
+   pretty = lambda x: round(x,decimals) if isinstance(x,float) else x
+   return '<'+', '.join(['%s: %s' % (k, pretty(d[k])) for k in keys)  + '>'
+
+class o(object):
+  "Javascript envy. Now 'o' is like a JS object."
+  def __init__(i, **l)    : i.__vals().update(l)
+  def __getitem__(i, k)   : return i.__dict__[k]
+  def __setitem__(i, k, v): return i.__dict__[k] = v
+  def __repr__(i):
+    return i.__class__.__name__ + kv(i.__dict__,i.__keys())
+  def __keys(j): 
+    return [k for k in sorted(i.__dict__.)keys()) if not k[0] is "_"]
+
+class Row(o):
   def __init__(i,x,y,w): 
     i.w,i.x,i.y,i.dom = w,x,y,0
   def __lt__(i,j):
@@ -58,6 +74,44 @@ class Rules:
   def __init__(i,data):
     t = Table(data[0], data[1:])
 
+def nodes(t):
+  if t:
+    yield t
+    for kid in [t.left, t.right]:
+      for z in nodes(kid):
+        yield z
+
+# needs to 
+def splits(lst, epsilon=None, few=None, x=same, y=same):
+  def val(j): return x( lst[j] )
+  def worker(lo, hi, parent, lvl):
+    m1 = m2 = m = lo + (hi - lo) // 2
+    while m1 < hi-1 and val(m1) == val(m1+1): m1 += 1
+    while m2 > 0    and val(m2) == val(m2-1): m2 -= 1
+    m = m1 if (m1 - m) < (m - m2) else m2
+    node = o(x= Num( lst[lo:hi], f=x ),
+             y= Num( lst[lo:hi], f=y ),
+             level=lvl,
+             _parent=parent, cut=None, left=None, right=None) 
+    if hi - lo > few:
+      if val(hi-1) - val(lo) > epsilon:
+        if m is not lo and m is not hi-1:
+          node.cut=m
+          left  = worker(lo,  m, node, lvl+1)
+          right = worker(m,  hi, node, lvl+1)
+          if left.cut and right.cut:
+            cuts += [m]
+            node.left = left
+            node.right = right
+    return node
+  # main ------------------
+  cuts    = []
+  epsilon = epsilon or Num(inits=lst,f=x).sd()*THE.cohen
+  few     = few     or len(lst)**THE.power
+  few     = max(few,THE.few)
+  lst     = sorted(lst, key=x)
+  return cuts,worker( 0, len(lst), None, 0) 
+ 
 Rules(auto.data)
 
 # #rows have id and objs and __lt__
