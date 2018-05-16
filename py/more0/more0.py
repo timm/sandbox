@@ -161,8 +161,8 @@ def splits(lst, epsilon=None, few=None, x=same, y=same):
   def recurse(lo=0, hi=len(lst), up=None, lvl=0):
     node = makeNode(lst[lo:hi], lvl=lvl, up=up) if lvl else up
     m = mid(lo,hi)
-    if lo < m < hi-1:
-      if hi - m > few:
+    #if lo < m < hi-1:
+    if hi - m > few:
         if m - lo > few:
           if X(m) - X(lo) > epsilon:
             if X(hi-1) - X(m) > epsilon:
