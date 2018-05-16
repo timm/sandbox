@@ -140,7 +140,7 @@ class Sym(Thing):
   def __repr__(i):
     return 'Sym'+kv(dict(seen=i.seen, ent=i.ent(), n=i.n))
 
-def splits(lst, epsilon=None, few=None, x=same, y=same):
+def grow(lst, epsilon=None, few=None, x=same, y=same):
   "returns nil if nothing"
   def makeNode(lst, lvl=0, up=None):
     return o(x= Num( lst, f=x ),
@@ -161,13 +161,12 @@ def splits(lst, epsilon=None, few=None, x=same, y=same):
   def recurse(lo=0, hi=len(lst), up=None, lvl=0):
     node = makeNode(lst[lo:hi], lvl=lvl, up=up) if lvl else up
     m = mid(lo,hi)
-    #if lo < m < hi-1:
     if hi - m > few:
-        if m - lo > few:
-          if X(m) - X(lo) > epsilon:
-            if X(hi-1) - X(m) > epsilon:
-                node.left=recurse(lo=lo,  hi=m,  up=node,  lvl=lvl+1)
-                node.right=recurse(lo=m,   hi=hi, up=node, lvl=lvl+1)
+      if m - lo > few:
+        if X(m) - X(lo) > epsilon:
+          if X(hi-1) - X(m) > epsilon:
+             node.left = recurse(lo=lo,  hi=m,  up=node,  lvl=lvl+1)
+             node.right= recurse(lo=m,   hi=hi, up=node, lvl=lvl+1)
     return node
   # main ------------------
   lst     = sorted(lst, key=x)
@@ -187,17 +186,17 @@ def showt(t, tab="|.. ", pre="",lvl=0,val=lambda z: ""):
     if t.right:
       showt(t.right, tab, "> ", lvl+1, val)
 
-def _split1(z,X,Y): return [X(z),Y(z)]
 
-def _split(X=same,Y=same,N=1000):
-    seed(1)
-    _show = lambda z:  '%s to %s (%.1f) # %s' %(
+def _grow(X=same,Y=same,N=1000):
+  def _grow1(z): return [X(z),Y(z)]
+  seed(1)
+  _show = lambda z:  '%s to %s (%.1f) # %s' %(
                        z.x.lo, z.x.hi, z.x.mu,z.x.n)
-    print("\n--------------------------")
-    tree  = splits( [_split1(int(100*r()),X,Y) for _ in range(N)],
+  print("\n--------------------------")
+  tree  = grow( [_grow1(int(100*r())) for _ in range(N)],
                      x=first,
                      y=last)
-    showt( tree, val=_show )
+  showt( tree, val=_show )
 
 def xx(x):
     if x < 10: return x
@@ -205,9 +204,9 @@ def xx(x):
     if x < 70: return x
     return 70
 
-_split()
-_split(X=lambda x : 0 if x <40 else x,N=256)
-_split(X=xx,N=256)
+_grow()
+_grow(X=lambda x : 0 if x <40 else x,N=256)
+_grow(X=xx,N=256)
 
 #Table(auto.data[0], auto.data[1:])
 
