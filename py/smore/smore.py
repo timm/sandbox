@@ -58,28 +58,6 @@ def timeit(f):
   f()
   return time.perf_counter() - t1
 
-def csv(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
-  "World's smallest csv reader?"
-  use,rows,ako,hdr = [],[],[],None
-  with open(file) as fs:
-    for n,lst in enumerate(fs):
-      lst = re.sub(doomed, "", lst)
-      row = [z.strip() for z in lst.split(sep)]
-      if len(row) > 0:
-        use = use or [n for n,x in enumerate(row) if x[0] != skip]
-        row = [row[n] for n in use]
-        if n==0:
-          hdr     = row
-          objs    = [n for n,x in enumerate(hdr) if x[0] in '<>']
-          decs    = [n for n,x in enumerate(hdr) if not n in objs]
-          weights = [-1 if hdr[n][0]=="<" else 1 for n in objs]
-          ako     = [float if row[n][0] in "$<>" else sym for n in use]
-        if n > 0:
-          row     = [x if x[0]==skip else p(x) for x,p in zip(row,ako)]
-          rows   += [row]
-    return o(file=file, ako=ako, head=hdr, objs=objs, 
-             decs=decs, weights=weights, rows=rows)
-
 def main(calling, d, argv=None):
   "Configure command line parser from keys of dictonary 'd'"
   argv = argv or sys.argv[1:]
@@ -106,6 +84,28 @@ def main(calling, d, argv=None):
   except getopt.GetoptError as err: oops(err)
 
 #-------------
+def csv(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
+  "World's smallest csv reader?"
+  use,rows,ako,hdr = [],[],[],None
+  with open(file) as fs:
+    for n,lst in enumerate(fs):
+      lst = re.sub(doomed, "", lst)
+      row = [z.strip() for z in lst.split(sep)]
+      if len(row) > 0:
+        use = use or [n for n,x in enumerate(row) if x[0] != skip]
+        row = [row[n] for n in use]
+        if n==0:
+          hdr     = row
+          objs    = [n for n,x in enumerate(hdr) if x[0] in '<>']
+          decs    = [n for n,x in enumerate(hdr) if not n in objs]
+          weights = [-1 if hdr[n][0]=="<" else 1 for n in objs]
+          ako     = [float if row[n][0] in "$<>" else sym for n in use]
+        if n > 0:
+          row     = [x if x[0]==skip else p(x) for x,p in zip(row,ako)]
+          rows   += [row]
+    return o(file=file, ako=ako, head=hdr, objs=objs, 
+             decs=decs, weights=weights, rows=rows)
+
 class Row(o):
   def __init__(i,x,y,w): 
     i.w,i.x,i.y,i.dom = w,x,y,0
@@ -217,6 +217,16 @@ def bottomUp(t):
   return sorted( [t for t in tree(t)], 
                  key= lambda z:z.level, 
                  reverse= True)
+
+@demo
+def UP():
+  t=_grow()
+  seen={}
+  for b in bottomUp(t):
+    for u in supertree(b):
+      if not id(u) in seen:
+        seen[id(u)]= True
+        print(id(b), u.level)
 
 def grow(lst, epsilon=None, few=None, x=same, y=same):
   "returns nil if nothing"
