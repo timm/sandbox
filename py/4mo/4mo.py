@@ -1,5 +1,7 @@
 from lib import *
 
+def filep(x): return os.path.isfile(x)
+
 ABOUT = dict( 
   why  = "4mo: for making multi-objective rules",
   who  = "Tim Menzies, MIT license (2 clause)",
@@ -8,108 +10,102 @@ ABOUT = dict(
   what = dict(
     cohen=    dict(why  = "define small changes",
                 what = [0.2,0.3,0.5],
-                want = float),
-    DATA=     dict(why  = "input data csv file",
+                want = float)
+    ,DATA=     dict(why  = "input data csv file",
                 what = 'auto.csv',
                 make = str,
-                want = lambda x:os.path.isfile(x)),
-    decimals= dict(why= "decimals to display for floats",
+                want = filep)
+    ,decimals= dict(why= "decimals to display for floats",
                 what = 3,
-                want = int),
-    few=      dict(why  = "min bin size = max(few, N ^ power)", 
+                want = int)
+    ,few=      dict(why  = "min bin size = max(few, N ^ power)", 
                 what = 4,
-                want = int),
-    MAIN=     dict(why  = "start up action",
+                want = int)
+    ,MAIN=     dict(why  = "start up action",
                 what = "FORMO",
-                want = same),
-    power=    dict(why  = "min bin size = max(few, N ^ power)", 
+                want = same)
+    ,power=    dict(why  = "min bin size = max(few, N ^ power)", 
                 what = 0.5,
-                want = float),
-    undoubt=  dict(why = "doubt reductions must be larger than x*undoubt",
-                what = 1.05,
-                want = float)))
+                want = float)
+    ,undoubt=  dict(why = "doubt reductions must be larger than x*undoubt",
+                what = 1.01,
+                want = float)
+    ,verbose=  dict(why = "trace all calls",
+                what = False,
+                want = bool)
+))
 
 @demo
 def FORMO(): print(ABOUT["why"])
 
 #-------------
-def csv(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
-  "World's smallest csv reader?"
-  use,rows,ako,hdr = [],[],[],None
-  with open(file) as fs:
-    for n,lst in enumerate(fs):
-      lst = re.sub(doomed, "", lst)
-      row = [z.strip() for z in lst.split(sep)]
-      if len(row) > 0:
-        use = use or [n for n,x in enumerate(row) if x[0] != skip]
-        row = [row[n] for n in use]
-        if n==0:
-          hdr     = row
-          objs    = [n for n,x in enumerate(hdr) if x[0] in '<>']
-          decs    = [n for n,x in enumerate(hdr) if not n in objs]
-          weights = [-1 if hdr[n][0]=="<" else 1 for n in objs]
-          ako     = [float if row[n][0] in "$<>" else lambda z:z for n in use]
-          lo      = [ 10**32 for _ in objs]
-          hi      = [-10**32 for _ in objs]
-        if n > 0:
-          row     = [x if x[0]==skip else p(x) for x,p in zip(row,ako)]
-          lo      = [min(row[n], b4) for n,b4 in zip(objs,lo)]
-          hi      = [max(row[n], b4) for n,b4 in zip(objs,hi)]
-          rows   += [row]
-    return o(file=file, ako=ako, head=hdr, 
-             objs=objs, y=o(lo=lo, hi=hi),
-             decs=decs, weights=weights, rows=rows)
-
+   
 @demo
 def CSV(): 
-  t=csv("auto.csv")
-  print(t.y.lo,t.y.hi)
+  for r in data(rows("auto.csv")): print(r)
 
 class Row(o):
-  def __init__(i,x,y,w): 
-    i.w,i.x,i.y,i.dom = w,x,y,0
+  def __init__(i,x,y): 
+    i.x,i.y,i.dom = x,y,0
   def __lt__(i,j):
     return i.dom < j.dom
-  def dominates(i,j,lows,highs):
+  def dominates(i,j,weights,lows,highs):
     s1,s2,n,e,z = 0,0,len(i.y),10,10**-32
     for a,b,w,lo,hi in zip(i.y, j.y,
-                           i.w, lows, highs):
+                           weights, lows, highs):
       a   = (a - lo) / (hi - lo + z)
       b   = (b - lo) / (hi - lo + z)
       s1 -= e**( w * (a-b)/n )
       s2 -= e**( w * (b-a)/n )
     return s1/n < s2/n
-  
+ 
+@demo
+def CSV(): 
+  for r in data(rows("auto.csv")): print(r)
+
 class Table:
-  def __init__(i,head,rows):
-    objs,decs,weights = i.meta(head)
-    rows = [ Row([ row[n] for n in decs ], 
-                 [ row[n] for n in objs ], 
-                 weights) for row in rows ]
-    lows, highs = i.ranges(rows)
-    i.doms(rows, lows, highs)
-    i.report(sorted(rows))
-  def meta(i, head):
-    objs = [n for n,x in enumerate(head) if x[0] in '<>']
-    decs = [n for n,x in enumerate(head) if not n in objs]
-    weights =  [-1 if head[n][0]=="<" else 1 for n in objs]
-    return objs,decs,weights
-  def doms(i,lst, lows, highs):
-    for row1 in lst:
-      for row2 in lst:
-        if row1.dominates(row2,lows,highs): 
+  def __init__(i,row):
+    i.hdr  = row
+    i.rows = []
+    objs   = [n for n,x in enumerate(i.hdr) if x[0] in '<>']
+    decs   = [n for n,x in enumerate(i.hdr) if not n in objs]
+    i.x    = o(n=decs)
+    i.y    = o(n=objs, 
+               weights = [1 if i.hdr[n][0]==">" else -1 for n in objs],
+               lo      = [ 10**32 for _ in objs],
+               hi      = [-10**32 for _ in objs])
+    print("dec",i.x.n)
+    print("obj",i.y.n)
+  def __add__(i,row):
+    print(row)
+    def update(now,b4,f): 
+      print(now,type(now),b4,type(b4),f,type(f))
+      return b4 if now=="?" else f(now,b4)
+
+    decs    = [ row[n] for n in i.x.n ]
+    objs    = [ row[n] for n in i.y.n ]
+    i.rows += [ Row(decs,objs) ]
+    i.y.lo  = [ update(now, b4, min) for now,b4 in zip(objs, i.y.lo) ]
+    i.y.hi  = [ update(now, b4, max) for now,b4 in zip(decs, i.y.hi) ]
+  def doms(i):
+    for row1 in i.rows:
+      for row2 in i.rows:
+        if row1.dominates(row2, i.y.weigths, i.y.lo, i.y.hi):
           row1.dom += 1
-  def ranges(i,lst):
-    lo = [ 10**32 for _ in lst[0].y]
-    hi = [-10**32 for _ in lst[0].y]
-    for r1 in lst:
-      for n,x in enumerate(r1.y):
-        lo[n] = min(x, lo[n])
-        hi[n] = max(x, hi[n])
-    return lo,hi  
-  def report(i, rows):
-    for x in rows[:10]: print("<",x.y, x.dom)
-    for x in rows[-10:]: print(">",x.y, x.dom)
+
+def table(file):
+  t=None
+  for row in data(rows(file)):
+    if t:
+      t + row
+    else:
+      t=Table(row)
+  t.doms()
+  return t
+
+@demo
+def TABLE():
+  table("auto.csv")
 
 class Thing(o):
   def __init__(i, inits=[],f=lambda z:z):
@@ -121,8 +117,8 @@ class Thing(o):
     if x != None:
       i.n += 1
       i._add( i._f(x) )
-  def simpler(i):
-    return i.doubt > THE.undoubted * (
+  def simpler(i,j,k):
+    return i.doubt() > THE.undoubt * (
                            j.doubt() * j.n/i.n + 
                            k.doubt() * k.n/i.n ) 
 
@@ -162,30 +158,34 @@ def tree(t):
   if t:
     yield t
     if t.left:
-      for t1 in tree(t.left): yield t1
+      for u in tree(t.left): yield u
     if t.right:
-      for t2 in tree(t.right): yield t2
+      for v in tree(t.right): yield v
+
+def leaves(t):
+  for u in subtree(t):
+    if not u.left and not u.right:
+      yield u
+
+def subtree(t):
+  if t:
+    if t.left:
+      for u in subtree(t.left): yield u
+    if t.right:
+      for v in subtree(t.right): yield v
+    yield t
 
 def supertree(t):
   if t:
     yield t
     if t._up:
-      for t1 in supertree(t._up): yield t1
-
-def bottomUp(t):
-  return sorted( [t for t in tree(t)], 
-                 key= lambda z:z.level, 
-                 reverse= True)
+      for u in supertree(t._up): yield u
 
 @demo
-def UP():
+def SUBTREE():
   t=_grow()
-  seen={}
-  for b in bottomUp(t):
-    for u in supertree(b):
-      if not id(u) in seen:
-        seen[id(u)]= True
-        print(id(b), u.level)
+  for b in subtree(t):
+    print(b.level, b.x.n, id(b))
 
 def grow(lst, epsilon=None, few=None, x=same, y=same):
   "returns nil if nothing"
@@ -193,9 +193,8 @@ def grow(lst, epsilon=None, few=None, x=same, y=same):
     return o(x= Num( lst, f=x ), y= Num( lst, f=y ),
              level= lvl,
              _up  = up, 
-             simplifies=False, left = None, right= None) 
-  def X(j): 
-    return x( lst[j] )
+             simpler=False, left = None, right= None) 
+  X = lambda j:  x( lst[j] )
   def mid(lo,hi):
     m = m1 = m2 = int(lo +(hi-lo)/2)
     while m1 < hi-1 and X(m1-1) == X(m1)  : m1 += 1
@@ -228,16 +227,27 @@ def showt(t, tab="|.. ", pre="",lvl=0,val=lambda z: ""):
       showt(t.right, tab, "> ", lvl+1, val)
 
 def _grow(X=same,Y=same,N=1000):
-  def show(z): return [X(z),Y(z)]
+  def show(z): return [X(z), X(0 if z<27 else z)]
+  #(z)]
   seed(1)
-  _show = lambda z:  '%s to %s (%.1f) # %s' %(
-                       z.x.lo, z.x.hi, z.x.mu,z.x.n)
+  _show = lambda z:  '%s to %s (%.1f) # %s : %s' %(
+                       z.x.lo, z.x.hi, z.x.mu,z.x.n,z.simpler)
   print("\n--------------------------")
   tree = grow( [show(int(100*r())) for _ in range(N)],
                x=first,
                y=last)
   showt( tree, val=_show )
+  prune( tree )
+  showt( tree, val=_show )
   return tree
+
+def prune(t):
+  for u in subtree(t):
+    #if not u.simpler:
+      if u.left and u.right:
+        if u.y.simpler(u.left.y, u.right.y):
+          for v in supertree(u.left) : v.simpler = True
+          for w in supertree(u.right): w.simpler = True
 
 @demo
 def GROW0(): 
