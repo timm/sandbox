@@ -1,121 +1,36 @@
-#---------------------------------------------
-import getopt,sys,re,csv,math,time,os
-from random import random as r, choice as any, seed as seed
+from lib import *
 
-def same(x): return x
-
-d=dict
-ABOUT = d( 
-  why  = "4mo: simple multi-objective rule engine",
-  who  = "Tim Menzies",
-  when = "2018 MIT license (2 clause)",
+ABOUT = dict( 
+  why  = "4mo: for making multi-objective rules",
+  who  = "Tim Menzies, MIT license (2 clause)",
+  when = 2018,
   how  = "pypy3 smore.py",
-  what = d(
-    cohen=    d(why  = "define small changes",
+  what = dict(
+    cohen=    dict(why  = "define small changes",
                 what = [0.2,0.3,0.5],
                 want = float),
-    DATA=     d(why  = "input data csv file",
+    DATA=     dict(why  = "input data csv file",
                 what = 'auto.csv',
-                make = same,
-                want = os.path.isfile),
-    decimals= d(why= "decimals to display for floats",
+                make = str,
+                want = lambda x:os.path.isfile(x)),
+    decimals= dict(why= "decimals to display for floats",
                 what = 3,
                 want = int),
-    few=      d(why  = "min bin size = max(few, N ^ power)", 
+    few=      dict(why  = "min bin size = max(few, N ^ power)", 
                 what = 4,
                 want = int),
-    MAIN=     d(why  = "start up action",
+    MAIN=     dict(why  = "start up action",
                 what = "FORMO",
-                want = lambda z:z),
-    power=    d(why  = "min bin size = max(few, N ^ power)", 
+                want = same),
+    power=    dict(why  = "min bin size = max(few, N ^ power)", 
                 what = 0.5,
                 want = float),
-    undoubt=   d(why = "doubt reductions must be larger than x*undoubt",
+    undoubt=  dict(why = "doubt reductions must be larger than x*undoubt",
                 what = 1.05,
                 want = float)))
 
-#----------------------------------------------
-class o(object):
-  "Javascript envy. Now 'o' is like a JS object."
-  def __init__(i, **kv):    i.__dict__.update(kv)
-  def __setitem__(i, k, v): i.__dict__[k] = v
-  def __getitem__(i, k): return i.__dict__[k]
-  def keys(i):           return i.__dict__.keys()
-  def __repr__(i):       return i.__class__.__name__ + kv(i.__dict__, i._has())
-  def __len__(i):       return len(i.__dict__)
-  def _has(i):           return [k for k in sorted(i.__dict__.keys()) if k[0] != "_"]
-
-def the(b4):
-  now = o()
-  options = lambda x: x if isinstance(x, list) else [x]
-  for k in b4["what"].keys(): 
-    now[k]= options( b4["what"][k]["what"] )[0]
-  return now
-
-THE=the(ABOUT)
-#------------------------------------
-def demo(f=None, act=None, all=[]):
-  if     f: all += [f]
-  elif act:
-    for one in all:
-      print(one.__name__)
-      if one.__name__ == act: one()
-  else: [f() for f in all]
-  return f
-
 @demo
 def FORMO(): print(ABOUT["why"])
-
-def same(x): return x
-def first(l): return l[0]
-def second(l): return l[1]
-def last(l): return l[-1]
-
-def kv(d,keys=None, decimals=None):
-   "print dictionary, in key sort order"
-   decimals = decimals or THE.decimals
-   keys = keys or sorted(list(d.keys()))
-   pretty = lambda x: round(x,decimals) if isinstance(x,float) else x
-   return '{'+', '.join(['%s: %s' % (k, pretty(d[k]))for k in keys])+'}'
-
-def timeit(f):
-  t1=time.perf_counter()
-  f()
-  return time.perf_counter() - t1
-
-# todo one of
-def main(about, d, argv=None):
-  "Configure command line parser from keys of dictonary 'd'"
-  argv = argv or sys.argv[1:]
-  opts = 'h%s' % ''.join(['%s:' % k[0] for k in d.keys()])
-  oops = lambda x="": print(x) or sys.exit(2)
-  try:
-    com, args = getopt.getopt(argv,opts)
-    for opt, arg in com:
-      if opt == '-h':
-        print(about["why"],"\n",'(c) ',about["who"],", ",about["when"],sep="")
-        print('USAGE: ' ,
-              about["how"]," -",''.join([s for s in opts if s != ':']),
-              sep="",
-              end="\n\n")
-        for k in d.keys(): 
-          print("  -%s\t%s    (default=%s)" % (k[0],about["what"][k]["why"],d[k]))
-        print("  -h\tshow help")
-        sys.exit(0)
-      else:
-        for k in d.keys():
-          if opt[1]==k[0]:
-            try: 
-              m   = about["what"][k]
-              fun = m["make"] if "make" in m else m["want"]
-              arg = fun(arg)
-              if not m["want"](arg):
-                oops("bad type: %s; not %s" % (arg, m["want"].__name__))
-            except Exception as err: 
-              print(56)
-              oops(err)
-            d[k] = arg
-  except getopt.GetoptError as err: oops(err)
 
 #-------------
 def csv(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
@@ -133,12 +48,22 @@ def csv(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
           objs    = [n for n,x in enumerate(hdr) if x[0] in '<>']
           decs    = [n for n,x in enumerate(hdr) if not n in objs]
           weights = [-1 if hdr[n][0]=="<" else 1 for n in objs]
-          ako     = [float if row[n][0] in "$<>" else sym for n in use]
+          ako     = [float if row[n][0] in "$<>" else lambda z:z for n in use]
+          lo      = [ 10**32 for _ in objs]
+          hi      = [-10**32 for _ in objs]
         if n > 0:
           row     = [x if x[0]==skip else p(x) for x,p in zip(row,ako)]
+          lo      = [min(row[n], b4) for n,b4 in zip(objs,lo)]
+          hi      = [max(row[n], b4) for n,b4 in zip(objs,hi)]
           rows   += [row]
-    return o(file=file, ako=ako, head=hdr, objs=objs, 
+    return o(file=file, ako=ako, head=hdr, 
+             objs=objs, y=o(lo=lo, hi=hi),
              decs=decs, weights=weights, rows=rows)
+
+@demo
+def CSV(): 
+  t=csv("auto.csv")
+  print(t.y.lo,t.y.hi)
 
 class Row(o):
   def __init__(i,x,y,w): 
@@ -332,5 +257,6 @@ def GROW2():
   _grow(X=xx,N=256)
 
 if __name__ == "__main__":
-   main(ABOUT,THE)
+   THE = main(ABOUT)
+   DECIMALS=THE.decimals
    demo(act=THE.MAIN)
