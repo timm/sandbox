@@ -124,3 +124,27 @@ def main(about, argv=None):
             except Exception as err: oops(err)
   except getopt.GetoptError as err: oops(err)
   return d
+
+
+from colorama import Fore, Style
+from contextlib import contextmanager
+
+class Highlight:
+  def __init__(self, clazz, color):
+    self.color = color
+    self.clazz = clazz
+  def __enter__(self):
+    print(self.color, end="")
+  def __exit__(self, type, value, traceback):
+    if self.clazz == Fore:
+      print(Fore.RESET, end="")
+    else:
+      assert self.clazz == Style
+      print(Style.RESET_ALL, end="")
+    sys.stdout.flush()
+
+def plain(s):
+  print(s)
+def red(s):
+  with Highlight(Fore, Fore.RED): print(s)
+
