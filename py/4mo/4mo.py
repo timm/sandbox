@@ -74,38 +74,56 @@ class Table:
                weights = [1 if i.hdr[n][0]==">" else -1 for n in objs],
                lo      = [ 10**32 for _ in objs],
                hi      = [-10**32 for _ in objs])
-    print("dec",i.x.n)
-    print("obj",i.y.n)
   def __add__(i,row):
-    print(row)
     def update(now,b4,f): 
-      print(now,type(now),b4,type(b4),f,type(f))
       return b4 if now=="?" else f(now,b4)
-
     decs    = [ row[n] for n in i.x.n ]
     objs    = [ row[n] for n in i.y.n ]
     i.rows += [ Row(decs,objs) ]
     i.y.lo  = [ update(now, b4, min) for now,b4 in zip(objs, i.y.lo) ]
-    i.y.hi  = [ update(now, b4, max) for now,b4 in zip(decs, i.y.hi) ]
+    i.y.hi  = [ update(now, b4, max) for now,b4 in zip(objs, i.y.hi) ]
   def doms(i):
     for row1 in i.rows:
       for row2 in i.rows:
-        if row1.dominates(row2, i.y.weigths, i.y.lo, i.y.hi):
+        if row1.dominates(row2, i.y.weights, i.y.lo, i.y.hi):
           row1.dom += 1
+
+def tree(t):
+  if t:
+    yield t
+    for u in tree(t.left): yield u
+    for v in tree(t.right): yield v
+
+def leaves(t):
+  for u in subtree(t):
+    if not u.left and not u.right: yield u
+
+def subtree(t):
+  if t:
+    for u in subtree(t.left): yield u
+    for v in subtree(t.right): yield v
+    yield t
+
+def supertree(t):
+  if t:
+    yield t
+    if t._up:
+      for u in supertree(t._up): yield u
 
 def table(file):
   t=None
   for row in data(rows(file)):
-    if t:
-      t + row
-    else:
-      t=Table(row)
+    if t: t + row
+    else: t = Table(row)
   t.doms()
   return t
 
 @demo
 def TABLE():
-  table("auto.csv")
+  t=table("auto.csv")
+  t.rows = sorted(t.rows)
+  for row in t.rows[:10]: print("<", row.y,row.dom)
+  for row in t.rows[-10:]: print(">",row.y,row.dom)
 
 class Thing(o):
   def __init__(i, inits=[],f=lambda z:z):
@@ -153,34 +171,6 @@ class Sym(Thing):
     return i._ent
   def __repr__(i):
     return 'Sym'+kv(dict(seen=i.seen, ent=i.ent(), n=i.n))
-
-def tree(t):
-  if t:
-    yield t
-    if t.left:
-      for u in tree(t.left): yield u
-    if t.right:
-      for v in tree(t.right): yield v
-
-def leaves(t):
-  for u in subtree(t):
-    if not u.left and not u.right:
-      yield u
-
-def subtree(t):
-  if t:
-    if t.left:
-      for u in subtree(t.left): yield u
-    if t.right:
-      for v in subtree(t.right): yield v
-    yield t
-
-def supertree(t):
-  if t:
-    yield t
-    if t._up:
-      for u in supertree(t._up): yield u
-
 @demo
 def SUBTREE():
   t=_grow()

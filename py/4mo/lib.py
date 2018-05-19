@@ -49,10 +49,10 @@ def data(rows, rules={"$": float,"<":float,">":float}):
   changes = None
   def change1(x,f): return x if x[0]=="?" else f(x) 
   for row in rows:
-    if changes:
-      row  = [ change1(x,f) for x,f in zip(row, changes)  ]
-    else:
-      changes = [ rules.get(x[0],lambda z:z) for x in row ] 
+    if changes: 
+      row = [ change1(x,f) for x,f in zip(row, changes)  ]
+    else:       
+      changes= [ rules.get(x[0],lambda z:z) for x in row ] 
     yield row
  
 #----------------------------------------------
