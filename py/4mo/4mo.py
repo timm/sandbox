@@ -94,9 +94,11 @@ def tree(t):
     for u in tree(t.left): yield u
     for v in tree(t.right): yield v
 
-def leaves(t):
-  for u in subtree(t):
-    if not u.left and not u.right: yield u
+def supertree(t):
+  if t:
+    yield t
+    if t._up:
+      for u in supertree(t._up): yield u
 
 def subtree(t):
   if t:
@@ -104,11 +106,9 @@ def subtree(t):
     for v in subtree(t.right): yield v
     yield t
 
-def supertree(t):
-  if t:
-    yield t
-    if t._up:
-      for u in supertree(t._up): yield u
+def leaves(t):
+  for u in subtree(t):
+    if not u.left and not u.right: yield u
 
 def table(file):
   t=None
