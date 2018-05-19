@@ -3,36 +3,49 @@ from lib import *
 def filep(x): return os.path.isfile(x)
 
 ABOUT = dict( 
-  why  = "4mo: for making multi-objective rules",
-  who  = "Tim Menzies, MIT license (2 clause)",
-  when = 2018,
-  how  = "pypy3 smore.py",
+why  = "4mo: for making multi-objective rules",
+who  = "Tim Menzies, MIT license (2 clause)",
+when = 2018,
+how  = "pypy3 smore.py",
+copyright="""
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this 
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, 
+   this list of conditions and the following disclaimer in the documentation 
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  """,
   what = dict(
-    cohen=    dict(why  = "define small changes",
-                what = [0.2,0.3,0.5],
-                want = float)
-    ,DATA=     dict(why  = "input data csv file",
-                what = 'auto.csv',
-                make = str,
-                want = filep)
-    ,decimals= dict(why= "decimals to display for floats",
-                what = 3,
-                want = int)
-    ,few=      dict(why  = "min bin size = max(few, N ^ power)", 
-                what = 4,
-                want = int)
-    ,MAIN=     dict(why  = "start up action",
-                what = "FORMO",
-                want = same)
-    ,power=    dict(why  = "min bin size = max(few, N ^ power)", 
-                what = 0.5,
-                want = float)
-    ,undoubt=  dict(why = "doubt reductions must be larger than x*undoubt",
-                what = 1.01,
-                want = float)
-    ,verbose=  dict(why = "trace all calls",
-                what = False,
-                want = bool)
+     cohen=   dict(why  = "define small changes",
+	 	   what = [0.2,0.3,0.5], want = float)
+    ,DATA=    dict(why  = "input data csv file",
+		   what = 'auto.csv', make = str, want = filep)
+    ,decimals=dict(why  = "decimals to display for floats",
+		   what = 3, want = int)
+    ,few=     dict(why  = "min bin size = max(few, N ^ power)",
+		   what = 4, want = int)
+    ,MAIN=    dict(why  = "start up action",
+		   what = "FORMO", want = same)
+    ,power=   dict(why  = "min bin size = max(few, N ^ power)",
+		   what = 0.5, want = float)
+    ,undoubt= dict(why  = "doubt reductions must be larger than x*undoubt",
+		   what = 1.01, want = float)
+    ,verbose= dict(why  = "trace all calls",
+		   what = False, want = bool)
 ))
 
 @demo
@@ -75,8 +88,7 @@ class Table:
                lo      = [ 10**32 for _ in objs],
                hi      = [-10**32 for _ in objs])
   def __add__(i,row):
-    def update(now,b4,f): 
-      return b4 if now=="?" else f(now,b4)
+    update  = lambda x,b4,f: b4 if x=="?" else f(x,b4)
     decs    = [ row[n] for n in i.x.n ]
     objs    = [ row[n] for n in i.y.n ]
     i.rows += [ Row(decs,objs) ]
@@ -120,7 +132,7 @@ def table(file):
 
 @demo
 def TABLE():
-  t=table("auto.csv")
+  t = table("auto.csv")
   t.rows = sorted(t.rows)
   for row in t.rows[:10]: print("<", row.y,row.dom)
   for row in t.rows[-10:]: print(">",row.y,row.dom)
@@ -136,9 +148,8 @@ class Thing(o):
       i.n += 1
       i._add( i._f(x) )
   def simpler(i,j,k):
-    return i.doubt() > THE.undoubt * (
-                           j.doubt() * j.n/i.n + 
-                           k.doubt() * k.n/i.n ) 
+    return i.doubt() > THE.undoubt * ( 
+           j.doubt() * j.n/i.n + k.doubt() * k.n/i.n ) 
 
 class Num(Thing):
   def locals(i): 

@@ -81,7 +81,7 @@ def main(about, argv=None):
   argv = argv or sys.argv[1:]
   keys = sorted([k for k in about["what"].keys()])
   mark = lambda k: "" if isinstance(d[k],bool) else ":"
-  opts = 'h%s' % ''.join(['%s%s' % (k[0],mark(k)) for k in keys])
+  opts = 'hC%s' % ''.join(['%s%s' % (k[0],mark(k)) for k in keys])
   oops = lambda x,y=2: print(x) or sys.exit(y)
   #-------------------------------------------------------
   def one(d,slot,opt,arg):
@@ -97,20 +97,26 @@ def main(about, argv=None):
         oops("%s: %s is not one of %s" % (opt, arg, what))
     return arg
   #-------------------------------------------------------
-  def usage():
+  def oneLine():
     print(about["why"],"\n",'(c) ',about["when"],", ",about["who"],sep="")
+  def usage():
+    oneLine()
     print('\nUSAGE: ' , 
           about["how"]," -",''.join([s for s in opts if s != ':']),
           sep="", end="\n\n")
     for k in keys: 
       print("  -%s\t%-10s\t%s    (default=%s)" % (
              k[0],k,about["what"][k]["why"],d[k]))
-    oops("  -h\t%-10s\tshow help" % '' , 0)
+    oops("  -hC\t%-10s\tshow help" % '' , 0)
+  def copyrite():
+     oneLine()
+     oops(about["copyright"],0)
   #-------------------------------------------------------
   try:
     com, args = getopt.getopt(argv,opts)
     for opt, arg in com:
       if opt == '-h': usage()
+      elif opt == '-C': copyrite()
       else:
         for k in keys:
           if opt[1]==k[0]:
