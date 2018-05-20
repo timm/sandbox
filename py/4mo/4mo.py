@@ -191,7 +191,7 @@ def SPLITS():
   for x in lst: print(x.key, x, len(x.rows))
   out = []
   for sub in subsets(lst[:10]):
-    one = combine(sub, len(t.rows)**0.6)
+    one = combine(sub, 20)
     if one:
       out += [one]
   print()
