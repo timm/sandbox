@@ -20,6 +20,18 @@ def first(l): return l[0]
 def second(l): return l[1]
 def last(l): return l[-1]
 
+def subsets(lst):
+  if lst is None: return None
+  subsets = [[]]
+  lst1 = []
+  for n in lst:
+    for s in subsets:
+      lst1.append(s + [n])
+    subsets += lst1
+    lst1 = []
+  return subsets
+
+print(len(subsets([1,2,3,4,5,6,7])))
 def kv(d,keys=None):
    "print dictionary, in key sort order"
    keys = keys or sorted(list(d.keys()))
@@ -44,17 +56,24 @@ def rows(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
         assert len(cells) == len(use),'row %s has not %s cells' % (n,len(use))
         yield [cells[n] for n in use]
 
-def data(rows, rules={"$": float,"<":float,">":float}): 
+def data(src, rules={"$": float,"<":float,">":float}): 
   "Coerce strings to things using rules seen on line 1"
   changes = None
   def change1(x,f): return x if x[0]=="?" else f(x) 
-  for row in rows:
+  for row in src:
     if changes: 
       row = [ change1(x,f) for x,f in zip(row, changes)  ]
     else:       
       changes= [ rules.get(x[0],lambda z:z) for x in row ] 
     yield row
- 
+
+def xy(src, rules=['<','>']):
+  decs, objs = None, None
+  for row in src:
+    decs = decs or [n for n,x in enumerate(row) if not x[0] in rules]
+    objs = objs or [n for n,x in enumerate(row) if     x[0] in rules]
+    yield [row[n] for n in decs] , [row[n] for n in objs]
+
 #----------------------------------------------
 class o(object):
   "Javascript envy. Now 'o' is like a JS object."
@@ -144,7 +163,7 @@ class Highlight:
     sys.stdout.flush()
 
 def plain(s):
-  print(s)
+  print(s,end="")
 def red(s):
-  with Highlight(Fore, Fore.RED): print(s)
+  with Highlight(Fore, Fore.RED): print(s,end="")
 

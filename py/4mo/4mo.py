@@ -68,8 +68,12 @@ def CSV():
     if n< 10: print(r)
 
 class Row(o):
+  id = 0
   def __init__(i,x,y): 
     i.x,i.y,i.dom = x,y,0
+    i._id = Row.id = Row.id+1
+  def __hash__(i):
+    return i._id
   def __lt__(i,j):
     return i.dom < j.dom
   def dominates(i,j,weights,lows,highs):
@@ -83,42 +87,64 @@ class Row(o):
     return s1/n < s2/n
  
 class Table:
-  def __init__(i,row):
-    i.hdr  = row
-    i.rows = []
-    objs   = [n for n,x in enumerate(i.hdr) if x[0] in '<>']
-    decs   = [n for n,x in enumerate(i.hdr) if not n in objs]
-    xhead =  [row[n] for n in decs]
-    yhead =  [row[n] for n in objs]
-    i.x    = o(get=decs,
-               head= xhead,
-               nums= [n for n,x in enumerate(xhead) if x[0] == '$']
-               )
-    i.y    = o(get     = objs, 
-               head    = yhead,
-               weights = [1 if x[0]==">" else -1 for x in yhead],
-               lo      = [ 10**32 for _ in yhead],
-               hi      = [-10**32 for _ in yhead])
-    print(i.x.nums)
-  def __add__(i,row):
-    update  = lambda x,b4,f: b4 if x=="?" else f(x,b4)
-    decs    = [ row[n] for n in i.x.get ]
-    objs    = [ row[n] for n in i.y.get ]
+  def __init__(i,decs,objs):
+    i.rows  = []
+    i._dom  = False
+    i.x     = o(head    = decs,
+                nums    = [n for n,x in enumerate(decs) if x[0] == '$'] ,
+                syms    = [n for n,x in enumerate(decs) if x[0] != '$'] )
+    i.y     = o(head    = objs,
+                weights = [1 if x[0]==">" else -1 for x in objs],
+                lo      = [ 10**32 for _ in objs],
+                hi      = [-10**32 for _ in objs])
+  def row(i,decs,objs):
+    update  = lambda new,b4,f: new if new=="?" else f(new,b4)
     i.rows += [ Row(decs,objs) ]
     i.y.lo  = [ update(now, b4, min) for now,b4 in zip(objs, i.y.lo) ]
     i.y.hi  = [ update(now, b4, max) for now,b4 in zip(objs, i.y.hi) ]
   def doms(i):
-    for row1 in i.rows:
-      for row2 in i.rows:
-        if row1.dominates(row2, i.y.weights, i.y.lo, i.y.hi):
-          row1.dom += 1
+    if not i._dom: 
+      i._dom = True
+      for row1 in i.rows:
+        for row2 in i.rows:
+          if row1.dominates(row2, i.y.weights, i.y.lo, i.y.hi):
+            row1.dom += 1
     return i
   def splits(i):
+    i.doms()
+    val={}
     for n in i.x.nums:
-        tree = prune( grow( i.rows, x=lambda r:r.x[n], y=lambda r:r.dom) )
-        showt( tree, val=showNode )
-        print([u.x.lo for u in leaves(tree) if u.simpler])
-  
+      tree = prune( grow( i.rows, x=lambda r:r.x[n], y=lambda r:r.dom) )
+      showt( tree, val=showNode )
+      for u in leaves(tree):
+        if u.simpler:
+          key=(n,u.x.lo)
+          val[key] = u.y
+          u.y.key = key
+    for row in i.rows: 
+      for n in i.x.syms:
+        key = (n, row.x[n])
+        tmp = val[key] if key in val else Num()
+        tmp.key = key
+        tmp.rows += [row]
+        tmp + row.dom
+        val[key] = tmp
+    return val
+ 
+class Range:
+  def __init__(i,lo=None, hi=None):
+    if hi == None: hi=lo
+    i.lo, i.hi = lo, hi
+
+#class Range:
+#    def __init__(i,t,n): i.n, i.t, i.act = n, t, None
+#    def __eq__(i, z): lambda row: t.rows.x[i.n] == z
+#    def __ne__(i, z): lambda row: t.rows.x[i.n] != z
+#    def __lt__(i, z): lambda row: t.rows.x[i.n] <  z
+#    def __gt__(i, z): lambda row: t.rows.x[i.n] >  z
+#    def __le__(i, z): lambda row: t.rows.x[i.n] <= z
+#    def __ge__(i, z): lambda row: t.rows.x[i.n] >= z
+
 def tree(t):
   if t:
     yield t
@@ -143,9 +169,9 @@ def leaves(t):
 
 def table(file):
   t=None
-  for row in data(rows(file)):
-    if t: t + row
-    else: t = Table(row)
+  for x,y in xy(data(rows(file))):
+    if t: t.row(x,y)
+    else: t = Table(x,y)
   t.doms()
   return t
 
@@ -159,11 +185,44 @@ def DOM():
 
 @demo
 def SPLITS():
-  t = table("auto.csv").doms().splits()
+  t = table("auto.csv")
+  val = t.splits()
+  lst = sorted(val.values(),key=lambda z:z.mu,reverse=True)
+  for x in lst: print(x.key, x, len(x.rows))
+  out = []
+  for sub in subsets(lst[:10]):
+    one = combine(sub, len(t.rows)**0.6)
+    if one:
+      out += [one]
+  print()
+  sized = sorted(out, key=lambda z:(z[2],-z[1].mu))
+  seen=[]
+  best=-1
+  for keys, summary, cardinality in sized: 
+    if not cardinality in seen:
+      seen += [cardinality]
+      if summary.mu > best:
+        best = summary.mu
+        print(int(summary.mu),summary.n,cardinality, keys)
+  #print(sorted(out, key=lambda z: z[1].mu,reverse=True)[0])
 
+def combine(ranges, few):
+  print(".",end="")
+  ors, keys =  {},{}
+  for r in ranges:
+    col,val   = r.key
+    ors[col]  = set(r.rows) | ors.get(col, set())
+    keys[col] = keys.get(col,[]) + [val]
+  ands = None
+  for one in ors.values(): 
+    ands = ands & one if ands else one
+  if ands and len(ands) > few:
+    return keys,Num(ands, f=lambda r:r.dom),len(ranges)
+  
 class Thing(o):
   def __init__(i, inits=[],f=lambda z:z):
     i.locals()
+    i.rows=[]
     i.n, i._f = 0, f
     [i+x for x in inits]
   def __add__(i,x):
@@ -213,10 +272,12 @@ class Sym(Thing):
 def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
   "returns nil if nothing"
   def makeNode(lst, lvl=0, up=None):
-    return o(x= Num( lst, f=x ), y= klass( lst, f=y ),
+    tmp= o(x= Num( lst, f=x ), y= klass( lst, f=y ),
              level= lvl,
              _up  = up, 
              simpler=False, left = None, right= None) 
+    tmp.y.rows = lst
+    return tmp
   def X(j):       return  notNull( x( lst[j] ))
   def notNull(x): return  -10**32 if x is '?' else x
   def mid(lo,hi):
@@ -228,6 +289,8 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
   def recurse(lo=0, hi=len(lst), up=None, lvl=0):
     node = makeNode(lst[lo:hi], lvl=lvl, up=up) if lvl else up
     m = mid(lo,hi)
+    #print("lo",X(lo),dict(lo=lo,m=m,hi=hi,few=few,left=hi-m, 
+    #                      right=m-lo,epsilon=epsilon,xM=X(m),xh=X(hi -1),xRight=X(m)-X(lo),yLeft=X(hi-1)-X(m)))
     if hi - m > few:
       if m - lo > few:
         if X(m) - X(lo) > epsilon:
@@ -236,6 +299,7 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
              node.right= recurse(lo=m,   hi=hi, up=node, lvl=lvl+1)
     return node
   lst     = sorted(lst, key=lambda row: notNull(x(row)))
+  #print([x(z) for z in lst])
   root    = makeNode(lst)
   epsilon = epsilon or root.x.sd()*THE.cohen
   few     = max(few or len(lst)**THE.power, THE.few)
@@ -245,17 +309,18 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
 def showt(t, tab="|.. ", pre="",lvl=0,val=lambda z: ""):
   if t:
     if lvl==0: print("")
-    print(tab*lvl + pre,end="")
     val(t)
+    print(' ' + tab*lvl + pre)
     if t.left:
       showt(t.left,  tab, "< ", lvl+1, val)
     if t.right:
       showt(t.right, tab, "> ", lvl+1, val)
 
 def showNode(z):
-    f = plain if z.simpler else red 
-    f('%s to %s (%.1f) # %s : y.mu=%.1f y.sd=%.1f %s' %(
-      z.x.lo, z.x.hi,z.x.mu,z.x.n,z.y.mu, z.y.sd(), "\u2714" if z.simpler else "\u2717"))
+  f = plain if z.simpler else red 
+  f('%s y=%6.3g sd=%6.3g  when %6.3g <= x <= %6.3g [%5s]' %(
+    "\u2714" if z.simpler else "\u2717", 
+    z.y.mu, z.y.sd(),  z.x.lo, z.x.hi,z.y.n))
 
 def _grow(X=same,Y=same,N=10000):
   def flats(y):
