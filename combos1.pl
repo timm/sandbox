@@ -1,0 +1,42 @@
+all([
+	[ cart/de8 ,cart/de2 ],
+	[ cart/moead ,abe0 ],
+	[ cart/de/new ,atlm ,cart/de8 ,cart/de2 ,lp4ee ],
+	[ cart/de/new ],
+	[ cart/moead, abe0 ],
+	[ cart/moead ,cart/de/new ,lp4ee ,cart/de2 ,cart/de8 ],
+	[ cart/moead ,cart/de/new ],
+	[ cart/moead ,atlm ,abe0 ],
+	[ lp4ee ,atlm ,cart/de/new ,cart/de2 ,cart/de8] ]).
+
+count(L0,G) :- flatten(L0,L1), sort(L1,L2), group(L2,1,G).
+
+group([H],    N, [N/H]  ) :- !.
+group([H,H|T],M, Out      ) :- !, N is M+1, group([H|T],N,Out).
+group([H|T],  M, [M/H|Out]) :-              group(T,1,Out).
+
+
+x(X) :- all(L), member(Y,L), member(X,Y). % atomic(X).
+
+xs(Xs) :- setof(X,x(X),Xs).
+
+ones(L) :- setof([X],ones1(X),L).
+twos(L) :- setof([X,Y],twos1(X,Y),L).
+threes(L) :- setof([X,Y,Z],threes1(X,Y,Z),L).
+
+ones1(X)       :- xs(L), member(X,L).
+twos1(X,Y)     :- xs(L),  member(X,L), member(Y,L), X \= Y.
+threes1(X,Y,Z) :- twos1(X,Y), ones1(Z), Z \= X, Z\=Y.
+
+finds3(L) :- setof(N/X, L^(threes(L), member(X,L), works(X,N)), L).
+finds2(L) :- setof(N/X, L^(twos(L),   member(X,L), works(X,N)), L).
+finds1(L) :- setof(N/X, L^(ones(L),   member(X,L), works(X,N)), L).
+
+works(X,N) :- all(All),  works(All,X,0,N0), N is N0.
+
+works([],    _,  N, N).
+works([One|All], X, N0, N) :-
+  member(Y,X),
+  member(Y,One)
+  ->  works(All,X,1+N0,N) | works(All,X,N0,N).
+
