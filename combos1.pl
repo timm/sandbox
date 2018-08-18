@@ -15,14 +15,20 @@ group([H],    N, [N/H]  ) :- !.
 group([H,H|T],M, Out      ) :- !, N is M+1, group([H|T],N,Out).
 group([H|T],  M, [M/H|Out]) :-              group(T,1,Out).
 
+unique(X,Y) :- unique(X,Y,[]).
+
+unique([],[],_).
+unique([H|T],[H|Out], Seen) :- \+ member(H,Seen), !, unique(T,Out,[H|Seen]).
+unique([_|T],X,Seen) :- unique(T,X,Seen).
+
 
 x(X) :- all(L), member(Y,L), member(X,Y). % atomic(X).
 
 xs(Xs) :- setof(X,x(X),Xs).
 
 ones(L) :- setof([X],ones1(X),L).
-twos(L) :- setof([X,Y],twos1(X,Y),L).
-threes(L) :- setof([X,Y,Z],threes1(X,Y,Z),L).
+twos(L) :- setof(Z,X^Y^(twos1(X,Y),sort([X,Y],Z)),L).
+threes(L) :- setof(Z,W^X^Y^(threes1(W,X,Y),sort([W,X,Y],Z)), L).
 
 ones1(X)       :- xs(L), member(X,L).
 twos1(X,Y)     :- xs(L),  member(X,L), member(Y,L), X \= Y.
@@ -39,4 +45,8 @@ works([One|All], X, N0, N) :-
   member(Y,X),
   member(Y,One)
   ->  works(All,X,1+N0,N) | works(All,X,N0,N).
+
+
+printl(X) :- forall(member(Y,X),(print(Y),nl)).
+
 
