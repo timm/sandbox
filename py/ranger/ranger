@@ -7,8 +7,8 @@ class o:
   def __init__(i, **k): i.__dict__.update(k)
   def __repr__(i, **k): return '{'+str(i.__dict__)+'}'
 
-O = o( cohen=0.3,
-       era  = 32)
+O = o( cohen = 0.3,
+       era   = 1000)
 
 class Col:
   def __add__(i,x):      return x if x == "?" else i.add(x)
@@ -16,11 +16,17 @@ class Col:
   def prep(i,x):         return x if x == "?" else i.prep1(x)
 
 class Sym(Col): 
+  def __repr__(i):       return "Sym{"+str(i.mode)+"}"
   def __init__(i, txt=None, pos=1):
     i.txt, i.pos = txt,pos
     i.n, i.counts = 0,{}
     i.most, i.mode = 0, None
     i._ent = None
+  def copy(i):
+    j = Sym(i.txt, i.pos)
+    j.n, j.most, j.mode, j._ent = i.n,i.most,i.mode,i._ent
+    for k,v in i.counts.items(): j.counts[k] = v
+    return j
   def prep(i,x): 
     return x
   def div(i,x): 
@@ -37,18 +43,24 @@ class Sym(Col):
   def ent(i):
     if not i._ent:
       self._ent=0
-      for x,n in i.counts:
+      for x,n in i.counts.items():
         p = n/i.n
         i._ent =- math.log(p,2) 
     return i._ent
 
 class Num(Col):
+  def __repr__(i):       return "Num{"+str(i.sd*O.cohen)+"}"
   def __init__(i,txt=None, pos=1):
     i.txt, i.pos = txt,pos
     i.n  = i.mu = i.m2 = 0
     i.sd = 0
     i.hi = -10**32
     i.lo =  10**32
+  def copy(i):
+    j = Num(i.txt, i.pos)
+    j.n,  j.mu, j.m2 = i.n,  i.mu, i.m2 
+    j.sd, j.hi, j.lo = i.sd, i.hi, i.lo
+    return j
   def prep1(i,x): 
     return float(x)
   def div(i,x):   
@@ -56,6 +68,7 @@ class Num(Col):
     return x if i.n<2 else int(0.5 + x/r)*r
   def add(i,x):
     i.n  += 1
+    print("x",x,type(x))
     d     = x - i.mu
     i.mu +=  d/i.n
     i.m2 +=  d*(x - i.mu)
@@ -104,12 +117,7 @@ def prep(src,  nums=None):
       nums = ["$" in x[0] for x in xs]
     yield xs
 
-def what(s,pos): 
-  for c in [">","<","$"]: 
-    if c in s: return Num(s,pos)
-  return Sym(s,pos)
-
-def era(era,src,     n=O.era):
+def era(era,src):
   cache=[]
   for row in src:
     cache += [row]
@@ -119,16 +127,31 @@ def era(era,src,     n=O.era):
   if cache:
     yield cache
 
-def cohen(src,  cols=None):
-  for xs in src:
-    if cols:
-      xs= [col + x for x,col in zip(xs,cols)]
-      xs= [col // x for x,col in zip(xs,cols)]
-    else:
-      cols= [what(s,pos) for pos,s in enumerate(xs)]
-    yield xs
+# [col + x for x,col in zip(row, now)]
+def what(pos,s): 
+  for c in [">","<","$"]: 
+    if c in s: return Num(txt=s,pos=pos)
+  return Sym(txt=s,pos=pos)
 
+def thenNow(eras):
+  then,now = [],[]
+  for rows in eras:
+    then = [col.copy() for col in now]
+    for row in rows:
+      if not now:
+        now = [what(pos,s) for pos,s in enumerate(row)]
+      else:
+        [col + cell for col,cell in zip(now,row)]
+        yield row, then
+
+def cohen(src,     cols=None):
+ for row,cols0 in src:
+   if cols:  
+     yield [col // x for col,x in zip(cols,row)]
+   else:
+     cols = cols0
+ 
 if __name__ == "__main__":
-  for lines in era(3,prep(cols(rows(lines())))):
-    print("")
-    print(lines)
+ src = thenNow( era(4, prep(cols(rows(lines())))))
+ for row in cohen(src):
+   print(row)
