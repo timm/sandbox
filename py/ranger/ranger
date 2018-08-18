@@ -1,0 +1,134 @@
+#!/usr/local/bin/python3
+# /* vim: set tabstop=8 softtabstop=0 expandtab shiftwidth=4 smarttab */
+
+import re,sys,math
+
+class o:
+  def __init__(i, **k): i.__dict__.update(k)
+  def __repr__(i, **k): return '{'+str(i.__dict__)+'}'
+
+O = o( cohen=0.3,
+       era  = 32)
+
+class Col:
+  def __add__(i,x):      return x if x == "?" else i.add(x)
+  def __floordiv__(i,x): return x if x == "?" else i.div(x)
+  def prep(i,x):         return x if x == "?" else i.prep1(x)
+
+class Sym(Col): 
+  def __init__(i, txt=None, pos=1):
+    i.txt, i.pos = txt,pos
+    i.n, i.counts = 0,{}
+    i.most, i.mode = 0, None
+    i._ent = None
+  def prep(i,x): 
+    return x
+  def div(i,x): 
+    return x
+  def add(i,x):
+    i._ent = None
+    i.n += 1
+    old = i.counts.get(x,0)
+    new = old + 1
+    i.counts[x] = new
+    if new > i.most:
+      i.most, i.mode = new, x
+    return x
+  def ent(i):
+    if not i._ent:
+      self._ent=0
+      for x,n in i.counts:
+        p = n/i.n
+        i._ent =- math.log(p,2) 
+    return i._ent
+
+class Num(Col):
+  def __init__(i,txt=None, pos=1):
+    i.txt, i.pos = txt,pos
+    i.n  = i.mu = i.m2 = 0
+    i.sd = 0
+    i.hi = -10**32
+    i.lo =  10**32
+  def prep1(i,x): 
+    return float(x)
+  def div(i,x):   
+    r = i.sd * O.cohen + 10**-32
+    return x if i.n<2 else int(0.5 + x/r)*r
+  def add(i,x):
+    i.n  += 1
+    d     = x - i.mu
+    i.mu +=  d/i.n
+    i.m2 +=  d*(x - i.mu)
+    if x > i.hi: i.hi = x 
+    if x < i.lo: i.lo = x 
+    if i.n >= 2:
+      i.sd = (i.m2/(i.n - 1 + 0.00001))**0.5  
+    return x   
+  
+def lines(s = None):
+  "Return contents, one line at a time."
+  if not s:
+    for line in sys.stdin:
+      yield line.rstrip()
+  elif s[-3:] in ["csv","dat"]:
+    with open(s) as fs:
+      for line in fs:
+        yield line
+  else:
+    for line in s.splitlines():
+      yield line
+
+def rows(src):
+  cache = []
+  for line in src:
+    line = re.sub(r'([ \n\r\t]|#.*)', "", line)
+    cache += [line]
+    if len(line)> 0:
+      if line[-1] != ",":
+        line = ''.join(cache)
+        cache=[]
+        yield line
+
+def cols(src,   uses=None):
+  for row in src:
+    cells = row.split(",")
+    uses  = uses or [False if "?" in s[0] else True for s in cells]
+    out   = [cells[pos] for pos,use  in enumerate(uses) if use]
+    yield out
+
+def prep(src,  nums=None):
+  for xs in src:
+    if nums:
+      xs= [(float(x) if num else x) for x,num in zip(xs,nums)]
+    else:
+      nums = ["$" in x[0] for x in xs]
+    yield xs
+
+def what(s,pos): 
+  for c in [">","<","$"]: 
+    if c in s: return Num(s,pos)
+  return Sym(s,pos)
+
+def era(era,src,     n=O.era):
+  cache=[]
+  for row in src:
+    cache += [row]
+    if len(cache) > era:
+      yield cache
+      cache = []
+  if cache:
+    yield cache
+
+def cohen(src,  cols=None):
+  for xs in src:
+    if cols:
+      xs= [col + x for x,col in zip(xs,cols)]
+      xs= [col // x for x,col in zip(xs,cols)]
+    else:
+      cols= [what(s,pos) for pos,s in enumerate(xs)]
+    yield xs
+
+if __name__ == "__main__":
+  for lines in era(3,prep(cols(rows(lines())))):
+    print("")
+    print(lines)
