@@ -1,15 +1,14 @@
 #!/usr/local/bin/gawk -f
-# set filetype=awk tabstop=8 softtabstop=0 expandtab shiftwidth=4 smarttab
+# set ft=awk et sts=2 sw=2 ts=2
+
+@include "config.awk"
 
 BEGIN { srand(Seed ? Seed : 1) 
-	FS   = ","  
-	Best = 0.25 }
+	split("",W,"")
+	FS   = "," }
       { update( NR-1 )
         if (NR==1) { print $0 ",dom"; next }  }
-END   { doms( NF+1 ) 
-	dump(Data) 
-	#rogues() 
-      }
+END   { finale() }
 
 ######### ######### ######### ######### ######### ######### 
 function update(r,   c) { 
@@ -27,28 +26,39 @@ func header(c,s) {
   if ( s ~ />/ ) W[c] =  1
   if ( s ~ /[<>\$]/ ) { Hi[c]= -10^32; Lo[c]=  10^32 }
 }
-function dom1(r1,r2,   w,n,c,a,b,s1,s2) {
-  n = length(W) + 10^-32
-  for (c in W) {
-    w   = W[c]
-    a   = Data[r1][c]
-    b   = Data[r2][c]
-    a   = (a - Lo[c]) / (Hi[c] - Lo[c] + 10^-32)
-    b   = (b - Lo[c]) / (Hi[c] - Lo[c] + 10^-32)
-    s1 -= 10^(w * (a - b) / n)
-    s2 -= 10^(w * (b - a) / n)  }
-  return s1 / n < s2 / n
-}
-function dom(r,m,         i,n) {
-  for(i=1; i<=m; i++)
-    n += dom1(r, anyBut(r,Data)) 
-  return n / m
-}
-function doms(k,      r) {
-  for(r in Data)  
-    Data[r][k] = dom(r,20/Best)
-}
+
 ######### ######### ######### ######### ######### ######### 
+function push(x,a) {
+  l[ length(a) + 1 ] = x
+  return x
+}
+
+function array(a) { split("",a,"") }
+
+function xpect(i,j,   n) {
+  n = i["n"] + j ["n"] +0.0001
+  return i["n"]/n * i["sd"] + j["n"]/n * j["sd"]
+}
+function ninc(i,x,    d) {
+  if (x == "?") return x
+  i["n"]++
+  d = x - i["mu"]
+  i["mu"] += d/i["n"]
+  i["m2"] += d*(x- i["mu"])
+  if (i["n"]>=2)
+    i["sd"] = (i["m2"]/(i["n"] - 1 + 10^-32))^0.5
+  return x
+}
+function ndec(i,x,    d) {
+  if (x == "?") return x
+  i["n"]--
+  d = x - i["mu"]
+  i["mu"] -= d/i["n"]
+  i["m2"] -= d*(x- i["mu"])
+  if (i["n"]>=2)
+    i["sd"] = (i["m2"]/(i["n"] - 1 + 10^-32))^0.5
+  return x
+}
 function anyBut(x,l,     y)  { 
   y = int(rand() * length(l)) + 1 
   return x==y ? anyBut(x,l) : y

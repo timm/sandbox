@@ -6,10 +6,8 @@ BEGIN { srand(Seed ? Seed : 1)
 	Best = 0.25 }
       { update( NR-1 )
         if (NR==1) { print $0 ",dom"; next }  }
-END   { doms( NF+1 ) 
-	dump(Data) 
-	#rogues() 
-      }
+END   { doms( NF+1 , 20/Best) 
+	dump(Data) }
 
 ######### ######### ######### ######### ######### ######### 
 function update(r,   c) { 
@@ -40,13 +38,13 @@ function dom1(r1,r2,   w,n,c,a,b,s1,s2) {
   return s1 / n < s2 / n
 }
 function dom(r,m,         i,n) {
-  for(i=1; i<=m; i++)
+  while(m-- > 0)
     n += dom1(r, anyBut(r,Data)) 
-  return n / m
+  return n 
 }
-function doms(k,      r) {
+function doms(k,m,      r) {
   for(r in Data)  
-    Data[r][k] = dom(r,20/Best)
+    Data[r][k] = dom(r,m)/m
 }
 ######### ######### ######### ######### ######### ######### 
 function anyBut(x,l,     y)  { 

@@ -1,0 +1,44 @@
+#!/usr/local/bin/gawk -f
+# set ft=awk et sts=2 sw=2 ts=2
+
+@include "lib.awk"
+
+function finale() {
+  for(c in Hi) ranges(c, Data)
+}
+
+function chops(c,     swaps,x,d,r,c,a) {
+  for(r in Data) {
+    x = Data[r][c]
+    if (x != "?") 
+      push(x,d) }
+  hi = asort(d)
+  chops1(c,d,1,hi,swaps)
+  for(r in Data)
+    if (x != "?") 
+      Data[r][c] = swaps[ Data[r][c] ]
+}
+function chops1(c,d,lo,hi,swaps,  i,num) {
+  cut = chop(d,lo,hi)
+  if(cut) {
+    chops1(c, d, lo,   cut, swaps)
+    chops1(c, d, cut+1, hi, swaps) }
+   else {
+    for(i=lo; i<=hi; i++) ninc(num, d[i])
+    for(i=lo; i<=hi; i++) swaps[ d[i] ] = num["mu"] }
+}
+function chop(d,lo,hi,    l,r,i,cut,best) {
+  if (hi - lo > 2* Enough) {
+    for(i=lo; i<=hi; i++) ninc(r, d[i])
+    best = r["sd"]
+    for(i=lo; i<=hi; i++) {
+      ninc(l, d[i])
+      ndec(r, d[i])
+      if (l["n"] >= Enough)
+	if (r["n"] >= Enough) 
+	  if (xpect(l,r) * Growth < best) {
+	     cut  = i
+	     best = xpect(l,r) }}}
+  return cut }
+
+
