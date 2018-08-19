@@ -47,27 +47,27 @@ function push(x,a) {
 function array(a) { split("",a,"") }
 
 function nexpect(i,j,   n) {
-  n = i["n"] + j["n"] +0.0001
-  return i["/n"] * i["sd"]+ j["n"]/n * j["sd"]
+  n = i.n + j.n +0.0001
+  return i./n * i.sd+ j.n/n * j.sd
 }
 function ninc(i,x,    d) {
   if (x == "?") return x
-  i["n"]++
-  d = x - i["mu"]
-  i["mu"] += d/i/n
-  i["m2"] += d*(x- i["mu"])
-  if (i["n"]>=2)
-    i["sd"] = (i["m2"]/(i["n"] - 1 + 10^-32))^0.5
+  i.n++
+  d = x - i.mu
+  i.mu += d/i/n
+  i.m2 += d*(x- i.mu)
+  if (i.n>=2)
+    i.sd = (i.m2/(i.n - 1 + 10^-32))^0.5
   return x
 }
 function ndec(i,x,    d) {
   if (x == "?") return x
-  i["n"]--
-  d = x - i["mu"]
-  i["mu"] -= d/i["n"]
-  i["m2"] -= d*(x- i["mu"])
-  if (i["n"]>=2)
-    i["sd"] = (i["m2"]/(i["n"] - 1 + 10^-32))^0.5
+  i.n--
+  d = x - i.mu
+  i.mu -= d/i.n
+  i.m2 -= d*(x- i.mu)
+  if (i.n>=2)
+    i.sd = (i.m2/(i.n - 1 + 10^-32))^0.5
   return x
 }
 function anyBut(x,l,     y)  { 

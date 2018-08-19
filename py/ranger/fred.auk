@@ -1,17 +1,14 @@
-#!/usr/local/bin/gawk -f
-# set ft=awk et sts=2 sw=2 ts=2
+# vim: set filetype=awk et sts=2 sw=2 ts=2  :
+ 
+@include "config.awk"
 
-@include "config"
-
-BEGIN { print "::" Laugh} 
 BEGIN { srand(Seed ? Seed : 1) 
 	split("",W,"")
 	FS   = "," }
       { update( NR-1 )
         if (NR==1) { print $0 ",dom"; next }  }
-END   { finale()i; rogues() }
+END   { finale() }
 
-function finale() { return 1 }
 ######### ######### ######### ######### ######### ######### 
 function update(r,   c) { 
   for(c=1; c<=NF; c++) { 
@@ -30,15 +27,6 @@ func header(c,s) {
 }
 
 ######### ######### ######### ######### ######### ######### 
-function new(i)      { split("",i,"") }
-function Any(i)   { new(i); i["oid"] = ++OID }
-	
-function has(lst,key,fun) {
-  lst[key][SUBSEP]
-  split("",lst[key],"")
-  if (fun) @fun(lst[key])
-}
-
 function push(x,a) {
   l[ length(a) + 1 ] = x
   return x
@@ -46,15 +34,15 @@ function push(x,a) {
 
 function array(a) { split("",a,"") }
 
-function nexpect(i,j,   n) {
-  n = i["n"] + j["n"] +0.0001
-  return i["/n"] * i["sd"]+ j["n"]/n * j["sd"]
+function xpect(i,j,   n) {
+  n = i["n"] + j ["n"] +0.0001
+  return i["n"]/n * i["sd"] + j["n"]/n * j["sd"]
 }
 function ninc(i,x,    d) {
   if (x == "?") return x
   i["n"]++
   d = x - i["mu"]
-  i["mu"] += d/i/n
+  i["mu"] += d/i["n"]
   i["m2"] += d*(x- i["mu"])
   if (i["n"]>=2)
     i["sd"] = (i["m2"]/(i["n"] - 1 + 10^-32))^0.5
