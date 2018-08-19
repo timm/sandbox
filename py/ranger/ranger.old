@@ -1,0 +1,88 @@
+#!/usr/local/bin/python3
+# /* vim: set tabstop=8 softtabstop=0 expandtab shiftwidth=4 smarttab */
+
+import re,sys,math
+from col import Sym,Num
+from copy import deepCopy as clone
+
+class o:
+  def __init__(i, **k): i.__dict__.update(k)
+  def __repr__(i, **k): return '{'+str(i.__dict__)+'}'
+
+O = o( cohen = 0.3,
+       era   = 1000)
+
+def lines(s = None):
+  if not s:
+    for line in sys.stdin:       yield line.rstrip()
+  elif s[-3:] in ["csv","dat"]:
+    with open(s) as fs:
+      for line in fs:            yield line
+  else:
+    for line in s.splitlines():  yield line
+
+def rows(src):
+  cache = []
+  for line in src:
+    line = re.sub(r'([ \n\r\t]|#.*)', "", line)
+    cache += [line]
+    if len(line)> 0:
+      if line[-1] != ",":
+        line = ''.join(cache)
+        cache=[]
+        yield line
+
+def cols(src,   uses=None):
+  for row in src:
+    cells = row.split(",")
+    uses  = uses or [False if "?" in s[0] else True for s in cells]
+    out   = [cells[pos] for pos,use  in enumerate(uses) if use]
+    yield out
+
+
+def table(src, x=None, y=None)
+  def has(s,lst):
+    for c in lst:
+      if c in s: return True
+  def nump(s):   return has(s, [">","<","$"]) 
+  def goalp(s):  return has(s, [">","<","!"])
+  def what(n,s): return Num(n,s) if nump(s) else Sym(n,s)
+  row = src.next()
+  x   = [what(n,s) for n,s in enumerate(row) if not goalp(s)]
+  :y   = [what(n,s) for n,s in enumerate(row) if     goalp(s)]
+  all = x[:] + y[:]
+  for row in src:
+    for h in all: row[h.pos] = h.seen( row[h.pos] )
+    yield o(x=x,y=y,all=all),row
+
+def era(era,src):
+  cache=[]
+  for x in src:
+    cache += [x]
+    if len(cache) > era:
+      yield cache
+      cache = []
+  if cache:
+    yield cache
+
+# [col + x for x,col in zip(row, now)]
+def thenNow(eras):
+  then = now = None
+  for about, rows in eras:
+    now  = now or clone(about.all)
+    then = clone(now)
+    for row in rows:
+      [h.seen(x) for h,x in zip(now,row)]
+      yield then,row
+
+def cohen(src,     cols=None):
+ for row,cols0 in src:
+   if cols:  
+     yield [col // x for col,x in zip(cols,row)]
+   else:
+     cols = cols0
+ 
+if __name__ == "__main__":
+ src = thenNow( era(4, prep(cols(rows(lines())))))
+ for row in cohen(src):
+   print(row)

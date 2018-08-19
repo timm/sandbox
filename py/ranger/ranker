@@ -1,0 +1,32 @@
+#!/usr/local/bin/gawk -f
+# set filetype=awk tabstop=8 softtabstop=0 expandtab shiftwidth=4 smarttab
+
+BEGIN {FS=","}
+{ for(I=1;I<=NF;I++) 
+    if (NF==1) {
+       print $0
+       header(I,$I) 
+    } else {
+       Data[I,NR-1] = $I 
+       if (I in Num) {
+	 Hi[I] = I > Hi[I] ? $I : Hi[I]
+	 Lo[I] = I < Lo[I] ? $I : Lo[I] }}}
+
+END { finale(Data,NR-1,NF) }
+
+func norm(x,r) return (x - Lo(r)) / (Hi[r] - Lo[r] + 10^-32)
+
+func header(txt,pos) {
+  if ( txt ~ /</  ) Less[pos]
+  if ( txt ~ />/  ) More[pos]
+  if ( txt ~ /[<>\$]/ ) {
+    Num[pos]
+    Hi[pos] = -10^32
+    Lo[pos] =  10^32 }}
+
+func dom(data,r1,r1) {
+}
+func final(data,   r,c){
+  for(r in data) 
+    
+}
