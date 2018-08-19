@@ -14,19 +14,23 @@ BEGIN {FS=","}
 
 END { finale(Data,NR-1,NF) }
 
-func norm(x,r) return (x - Lo(r)) / (Hi[r] - Lo[r] + 10^-32)
+func norm(x,c) return (x - Lo(c)) / (Hi[c] - Lo[c] + 10^-32)
 
 func header(txt,pos) {
-  if ( txt ~ /</  ) Less[pos]
-  if ( txt ~ />/  ) More[pos]
+  if ( txt ~ /</  ) W[pos] = -1
+  if ( txt ~ />/  ) W[pos] =  1
   if ( txt ~ /[<>\$]/ ) {
     Num[pos]
     Hi[pos] = -10^32
-    Lo[pos] =  10^32 }}
-
-func dom(data,r1,r1) {
+    Lo[pos] =  10^32 }
 }
-func final(data,   r,c){
-  for(r in data) 
-    
+function dominates(r1,r2, data,   n,c,a,b,s1,s1) {
+  n = length(W)
+  for (c in W) {
+    w  =  W[c]
+    a  =  norm(data[r1,c], c)
+    b  =  norm(data[r2,c], c)
+    s1 =- 10^(w * (a - b) / n)
+    s2 =- 10^(w * (b - a) / n)  }
+  return s1 / n < s2 / n
 }
