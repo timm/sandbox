@@ -14,6 +14,7 @@ function ranges(c,     d,hi,swaps) {
   colput(c,swaps) 
 }
 function colget(c,d,   r,x) {
+  fyi("\ncol " c)
   array(d)
   for(r in Data) {  
     x = Data[r][c]
@@ -26,14 +27,16 @@ function colput(c,swaps,   r,x) {
     if (x != "?") 
       Data[r][c] = swaps[x] }
 }
-function cuts(c,d,lo,hi,swaps,enough,     pre,r,cut) {
-  print pre lo, hi
+function cuts(c,d,lo,hi,swaps,enough,     pre,r,cut,txt) {
+  txt = pre d[lo] " " d[hi]
   cut = argmin(d,lo,hi,enough)
   if(cut) {
+    fyi(txt)
     cuts(c, d, lo,   cut, swaps,enough,pre "|__ ")
     cuts(c, d, cut+1, hi, swaps,enough,pre "|__ ") 
-  } else 
-    for(r=lo; r<=hi; r++) swaps[d[r]] = d[lo] 
+  } else  {
+    fyi(txt  " ("hi-lo")")
+    for(r=lo; r<=hi; r++) swaps[d[r]] = d[lo] }
 }
 function argmin(d,lo,hi,enough,
                 l,r,i,cut,best,tmp) {

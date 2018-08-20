@@ -28,16 +28,22 @@ eg3: ok; @cat data/auto.csv    | $(Awk) dom.awk
 
 Some=cut -d, -f 4,5,8,9 | sed 's/,/	/g'
 Fields=head -1 data/auto.csv | $(Some)
-eg4: 
+eg4:  ok
 	@$(MAKE) eg3 | $(Some)
 
-eg4best:  
+eg4best:  ok
 	@$(Fields)
 	@$(MAKE) eg3 | sort -t, -n -k 9 | tail  | $(Some)
 
-eg4worst:  
+eg4worst:  ok
 	@$(MAKE) eg3 | sort -t, -n -k 9 | head  | $(Some)
 
-eg5: ok; @$(MAKE) eg2 | $(Awk) ranges.awk
-eg6: ok; @$(MAKE) eg3 | $(Awk) ranges.awk
+eg5: ok; @$(MAKE) eg2 | $(Awk) unsup.awk
+eg6: ok; @$(MAKE) eg3 | $(Awk) unsup.awk
+
+eg7: ok; @$(MAKE) eg2 | $(Awk) super.awk
+eg8: ok; @$(MAKE) eg3 | $(Awk) super.awk
+
+
+eg9: ok; @$(MAKE) eg7 | $(Awk) sdtree.awk
 

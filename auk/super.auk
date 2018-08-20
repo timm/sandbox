@@ -8,36 +8,49 @@ END {
       ranges(C,NF)
   dump(Data) 
 }
-function ranges(c,k,     d,hi,swaps,our) {
-  array(d)
-  colget(c,k,d)
-  hi = xsort(d)
+function ranges(c,k,     d0,d,hi,swaps,our) {
+  colget(c,k,d0)
+  hi = xsort(d0,d)
   cuts(c,d,1,hi,swaps,hi^Enough)
   colput(c,swaps) 
 }
-function colget(c,k,d,   r,x) {
+function colget(c,k,d,   r,x,y) {
+  fyi("\ncol " c)
+  array(d)
   for(r in Data) {  
     x = Data[r][c]
+    y = Data[r][k]
     if (x != "?")
-      hAS(d,length(d) + 1,"xy",x, Data[r][k]) }
+      hAS(d,length(d) + 1,"xy",x, y) }
 }
+function xy(i,x,y) {
+  array(i)
+  i.x = x
+  i.y = y
+}
+
 function colput(c,swaps,   r,x) {
   for(r in Data) {
     x = Data[r][c]
     if (x != "?") 
       Data[r][c] = swaps[x] }
 }
-function cuts(c,d,lo,hi,swaps,enough,     pre,r,cut) {
-  print pre lo, hi
+function cuts(c,d,lo,hi,swaps,enough,     pre,r,cut,txt) {
+  txt = pre d[lo].x " " d[hi].x
   cut = argmin(d,lo,hi,enough)
   if(cut) {
+    fyi(txt)
     cuts(c, d, lo,   cut, swaps,enough,pre "|__ ")
     cuts(c, d, cut+1, hi, swaps,enough,pre "|__ ") 
-  } else 
-    for(r=lo; r<=hi; r++) swaps[d[r]] = d[lo] 
+  } else  {
+    fyi( txt " ("hi - lo")")
+    for(r=lo; r<=hi; r++) swaps[d[r].x] = d[lo].x 
+  }
 }
 function argmin(d,lo,hi,enough,
-                x,y,xl,xr,yl,lr,i,cut,xbest,ybest,xtmp,ytmp) {
+                i,cut,
+                x,xl,xr,xbest,xtmp,
+                y,yl,yr,ybest,ytmp) {
   if (hi - lo > 2* enough) {
     num(xl); num(xr)
     num(yl); num(yr)
@@ -55,8 +68,8 @@ function argmin(d,lo,hi,enough,
       if (xl.n >= enough)
 	     if (xr.n >= enough)  {
          xtmp = nxpect(xl,xr) *  Margin
-	       if (rtmp < xbest) {
-           xtmp = nxpect(yl,yr) *  Margin
+	       if (xtmp < xbest) {
+           ytmp = nxpect(yl,yr) *  Margin
 	         if (ytmp < ybest) {
 	           cut  = i
 	           xbest = xtmp   

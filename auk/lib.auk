@@ -2,7 +2,8 @@
 
 @include "config"
 
-BEGIN { srand(Seed ? Seed : 1) 
+BEGIN { _ = SUBSEQ
+        srand(Seed ? Seed : 1) 
         split("",W,"")
         FS   = "," }
       {  gsub(/[ \t\r]*/, "", $0) # no whitespce:
@@ -89,24 +90,19 @@ function dump(l,  line,i,j,sep) {
     for(j in l[i]) { line = line sep l[i][j]; sep  = "," }
     print line }
 }
-function xsort_cmp(k1,v1 k2,v2) {
-    if   (v1.x    <  v2.x) return -1
-    else if (v1.x == v2.x) return 0
-    else return 1
+function cmp(x,y) {
+  if (x <  y) return -1
+  if (x == y) return  0
+  return  1
 }
-function ysort_cmp(k1,v1 k2,v2) {
-    if   (v1.y    <  v2.y) return -1
-    else if (v1.y == v2.y) return 0
-    else return 1
-}
-function xsort(a) { return asort(a,"xsort_cmp") }
-function ysort(a) { return asort(a,"ysort_cmp") }
+function xsort_cmp( k1,v1,k2,v2) { return cmp(v1.x,  v2.x)  }
+function ysort_cmp( k1,v1,k2,v2) { return cmp(v1.y,  v2.y)  }
+function musort_cmp(k1,v1,k2,v2) { return cmp(v1.mu, v2.mu) }
 
-function xy(i,x,y) {
-  array(i)
-  i.x = x
-  i.y = y
-}
+function xsort(a,b) { return asort(a,b,"xsort_cmp") }
+function ysort(a,b) { return asort(a,b,"ysort_cmp") }
+function musort(a,b) { return asort(a,b,"musort_cmp") }
+
 ######### ######### ######### ######### ######### ######### 
 # numeric stuff
 
@@ -139,6 +135,8 @@ function rogues(    s) {
   for(s in SYMTAB) 
     if (s ~ /^[_a-z]/) print "Rogue: " s
 }
+i
+function fyi(x) { print x >> "/dev/stderr" }
 
 function fred(i) {
   Any(i)
