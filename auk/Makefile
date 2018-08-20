@@ -26,17 +26,18 @@ eg1: ok; @cat data/weather.csv | $(Awk) dom.awk
 eg2: ok; @cat data/weatherLong.csv | $(Awk) dom.awk
 eg3: ok; @cat data/auto.csv    | $(Awk) dom.awk
 
-Some=cut -d, -f 4,5,8
+Some=cut -d, -f 4,5,8,9 | sed 's/,/	/g'
 Fields=head -1 data/auto.csv | $(Some)
 eg4: 
 	@$(MAKE) eg3 | $(Some)
 
 eg4best:  
 	@$(Fields)
-	@$(MAKE) eg3 | sort -t, -n -k 3 | tail 
+	@$(MAKE) eg3 | sort -t, -n -k 9 | tail  | $(Some)
 
 eg4worst:  
-	@$(MAKE) eg3 | sort -t, -n -k 3 | head 
+	@$(MAKE) eg3 | sort -t, -n -k 9 | head  | $(Some)
 
-eg5: ok 
-	@$(MAKE) eg3 | $(Awk) ranges.awk
+eg5: ok; @$(MAKE) eg2 | $(Awk) ranges.awk
+eg6: ok; @$(MAKE) eg3 | $(Awk) ranges.awk
+

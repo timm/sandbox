@@ -31,18 +31,20 @@ func header(c,s) {
 
 function array(i) { split("",i,"") }
 function Any(i)   { array(i); i["oid"] = ++OID }
-  
-function has(lst,key,fun) {
+
+function has0(lst,key) {
   lst[key][SUBSEP]
   split("",lst[key],"")
-  if (fun) @fun(lst[key])
 }
-
-function push(x,a) {
-  a[ length(a) + 1 ] = x
-  return x
+function has(lst,key,fun) { 
+  has0(lst, key); if (fun) @fun(lst[key])
 }
-
+function haS(lst,key,fun,x) {
+  has0(lst,key); if (fun) @fun(lst[key],x)
+}
+function hAS(lst,key,fun,x,y) {
+  has0(lst,key); if (fun) @fun(lst[key],x,y)
+}
 
 ######### ######### ######### ######### ######### ######### 
 # Num stuff
@@ -86,6 +88,24 @@ function dump(l,  line,i,j,sep) {
     line = sep = ""
     for(j in l[i]) { line = line sep l[i][j]; sep  = "," }
     print line }
+}
+function xsort_cmp(k1,v1 k2,v2) {
+    if   (v1.x    <  v2.x) return -1
+    else if (v1.x == v2.x) return 0
+    else return 1
+}
+function ysort_cmp(k1,v1 k2,v2) {
+    if   (v1.y    <  v2.y) return -1
+    else if (v1.y == v2.y) return 0
+    else return 1
+}
+function xsort(a) { return asort(a,"xsort_cmp") }
+function ysort(a) { return asort(a,"ysort_cmp") }
+
+function xy(i,x,y) {
+  array(i)
+  i.x = x
+  i.y = y
 }
 ######### ######### ######### ######### ######### ######### 
 # numeric stuff
