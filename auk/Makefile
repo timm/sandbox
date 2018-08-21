@@ -46,4 +46,5 @@ eg8: ok; @$(MAKE) eg3 | $(Awk) super.awk
 
 
 eg9: ok; @$(MAKE) eg7 | $(Awk) sdtree.awk
+eg10: ok; @$(MAKE) eg8 | $(Awk) sdtree.awk
 

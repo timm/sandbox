@@ -2,29 +2,56 @@
 
 @include "lib"
 
-END { tree(NF-2,NF) }
+END { 
+  print ""
+  for(w in W)
+    printf("%10s ",Name[w])
+  print "\n"report(Data); tree(Data,NF-2,NF) 
+}
 
-function tree(max,k,   ranges,r,c,n,sorted,i) {
-  print("adads")
+function tree(rows,max,k,   pre,ranges,r,c,use,sorted) {
   array(ranges)
-  for(r in Data)
+  for(r in rows)
     for(c in Data[r])
-      if (c < max)
-        keep(c,Data[r][c], Data[r][k],ranges)
-  n=musort(ranges,sorted)
-  for(i=n;i>=1;i--) {
-    print("\n" i)
-    o(sorted[i]) }
+      if (c < max) 
+        kept(r,c, Data[r][c], Data[r][k], ranges)
+  use = best(ranges,sorted)
+  #for(r=length(sorted); r>=1; r--)
+  for(r=length(sorted); r>=1; r--)
+    if (sorted[r].column == use)
+      if (length( sorted[r].rows ) > length(Data)^0.5) 
+        kids(use, sorted[r],max,k,pre) 
+}
+function kids(use,range,max,k,pre,    txt) {
+   txt =  report(range.rows) pre Name[use] " = " range.value 
+   print(txt)
+   tree(range.rows,max,k,"|__ " pre) 
+}
+function range(i,c,x) {
+  num(i)
+  i.column = c
+  i.value  = x
+  has(i,"rows")
+}
+function kept(r,c,x,y,ranges,    key) {
+  if (x=="?") return 0
+  key = c "=" x
+  if (! (key in ranges))
+    hAS(ranges, key, "range",c,x)
+  ninc(ranges[key],y)
+  ranges[key].rows[r]
+}
+function best(ranges,sorted,  n) {
+  n = musort(ranges,sorted)
+  return sorted[n].column
 }
 
-function range(i,c,v) {
-  num(i)
-  i.c=c
-  i.v=v
-}
-function keep(c,v,k,ranges,   key) {
-  key = c "=" v
-  if (! (key in ranges))
-    hAS(ranges, key, "range",c,v)
-  ninc(ranges[key], k)
+function report(rows,   w,n,r,txt) {
+  for(w in W) {
+    num(n)
+    for(r in rows)
+      ninc(n,Data[r][w])
+    txt = txt sprintf("%10.2f ",n.mu)
+  }
+  return txt "\t"
 }

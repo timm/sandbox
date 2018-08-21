@@ -1,8 +1,8 @@
-# vim: ft=awk:tabstop=2:softtabstop=2:shiftwidth=2:expandtab
+#  vim: ft=awk:tabstop=2:softtabstop=2:shiftwidth=2:expandtab
 
 @include "config"
 
-BEGIN { _ = SUBSEQ
+BEGIN { 
         srand(Seed ? Seed : 1) 
         split("",W,"")
         FS   = "," }
@@ -22,6 +22,7 @@ function update(r,   c) {
    Lo[c] = $c < Lo[c] ? $c : Lo[c] }}}
 }
 func header(c,s) {
+  Name[c]=s
   if ( s ~ /</ ) W[c] = -1
   if ( s ~ />/ ) W[c] =  1
   if ( s ~ /[<>\$]/ ) { Hi[c]= -10^32; Lo[c]=  10^32 }
@@ -80,6 +81,10 @@ function ndec(i,x,    d) {
 ######### ######### ######### ######### ######### ######### 
 # List stuff
 
+function push(a,x) {
+  a[ length(a) + 1 ] = x
+  return x
+}
 function anyOther(x,l,     y)  { 
   y = int(rand() * length(l)) + 1 
   return x==y ? anyOther(x,l) : y
@@ -103,7 +108,7 @@ function xsort(a,b) { return asort(a,b,"xsort_cmp") }
 function ysort(a,b) { return asort(a,b,"ysort_cmp") }
 function musort(a,b) { return asort(a,b,"musort_cmp") }
 
-######### ######### ######### ######### ######### ######### 
+######## ######### ######### ######### ######### ######### 
 # numeric stuff
 
 function nump(x) {
@@ -135,12 +140,5 @@ function rogues(    s) {
   for(s in SYMTAB) 
     if (s ~ /^[_a-z]/) print "Rogue: " s
 }
-i
+
 function fyi(x) { print x >> "/dev/stderr" }
-
-function fred(i) {
-  Any(i)
-  has(i,"now","num")
-  has(i,"then","num")
-}
-

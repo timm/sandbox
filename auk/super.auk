@@ -15,7 +15,7 @@ function ranges(c,k,     d0,d,hi,swaps,our) {
   colput(c,swaps) 
 }
 function colget(c,k,d,   r,x,y) {
-  fyi("\ncol " c)
+  fyi("\ncol " Name[c])
   array(d)
   for(r in Data) {  
     x = Data[r][c]
