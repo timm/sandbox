@@ -9,6 +9,16 @@ N=$D/$(subst .md ,.md $D/,$M)
 
 Awk=AWKPATH='$V:$$AWKPATH' gawk -f
 
+#####################
+
+define myvar
+{ print $$0 1}
+endef
+
+xxx:
+	# of $(info $(myvar))
+	gawk --source '$(myvar)'
+
 ok : files $H $N
 
 files:
