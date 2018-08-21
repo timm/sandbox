@@ -16,16 +16,14 @@ function tree(rows,max,k,   pre,ranges,r,c,use,sorted) {
       if (c < max) 
         kept(r,c, Data[r][c], Data[r][k], ranges)
   use = best(ranges,sorted)
-  #for(r=length(sorted); r>=1; r--)
   for(r=length(sorted); r>=1; r--)
     if (sorted[r].column == use)
-      if (length( sorted[r].rows ) > length(Data)^0.5) 
         kids(use, sorted[r],max,k,pre) 
 }
 function kids(use,range,max,k,pre,    txt) {
-   txt =  report(range.rows) pre Name[use] " = " range.value 
-   print(txt)
-   tree(range.rows,max,k,"|__ " pre) 
+   if (length( range.rows ) > length(Data)^0.5) {
+     print  report(range.rows) pre Name[use] " = " range.value 
+     tree(range.rows,max,k,"|__ " pre)  }
 }
 function range(i,c,x) {
   num(i)
@@ -45,7 +43,6 @@ function best(ranges,sorted,  n) {
   n = musort(ranges,sorted)
   return sorted[n].column
 }
-
 function report(rows,   w,n,r,txt) {
   for(w in W) {
     num(n)
