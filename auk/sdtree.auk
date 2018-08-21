@@ -43,6 +43,7 @@ function best(ranges,sorted,  n) {
   n = musort(ranges,sorted)
   return sorted[n].column
 }
+
 function report(rows,   w,n,r,txt) {
   for(w in W) {
     num(n)
