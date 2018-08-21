@@ -24,7 +24,7 @@ function tree(rows,max,k,   pre,ranges,r,c,use,sorted) {
   use = best(ranges,sorted)
   for(r=length(sorted); r>=1; r--)
     if (sorted[r].column == use)
-        kids(use, sorted[r],max,k,pre) 
+        kids(use, sorted[r],max,k,pre)  
 }
 # Somethings to note:
 #
