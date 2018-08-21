@@ -1,18 +1,35 @@
 V=var
+D=docs
 F=$(shell ls *.auk)
 G=$(F:.auk=.awk)
 H=$V/$(subst .awk ,.awk $V/,$G)
+
+M=$(F:.auk=.md)
+N=$D/$(subst .md ,.md $D/,$M)
+
 Awk=AWKPATH='$V:$$AWKPATH' gawk -f
 
-ok : files $H
+ok : files $H $N
 
 files:
 	@[[ ! -f .ignore ]] && echo 'var' > .gitignore
-	@mkdir -p $V
+	@mkdir -p $V $D
 
 $V/%.awk : %.auk
 	@echo "# $@"  1>&2
 	@gawk '{print gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, "[\"\\1\\2\"]", "g", $$0)}' $< > $@
+
+$D/%.md : %.auk
+	@echo "# $@"  1>&2
+	@gawk ' \
+	BEGIN {In = 1; Pre=1}                                      \
+	gsub(/^"""/,"") {  In =  1 - In ; if (Pre) {Pre=0} else {   \
+	      if (In)  { print ""; print "```c " $$0 }  \
+	      else { print "```" $$0; print "" } }        \
+	    next }                    \
+	Pre { next }                   \
+	    { sub(/^#/,""); print }     \
+	END { if (In) print "```\n" }' $< > $@
 
 pull:
 	git pull
@@ -47,4 +64,5 @@ eg8: ok; @$(MAKE) eg3 | $(Awk) super.awk
 
 eg9: ok; @$(MAKE) eg7 | $(Awk) sdtree.awk
 eg10: ok; @$(MAKE) eg8 | $(Awk) sdtree.awk
+
 

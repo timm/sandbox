@@ -1,0 +1,11 @@
+ BEGIN {In=0}
+ /vim:/ { next }
+ {n=gsub(/^# /,"") 
+  if (In) 
+     if(!n) {print "```awk"; }
+   else 
+     if(!n) {print "```" }
+   print $0
+   In = n > 0
+}
+END {if (!In) print "````" }
