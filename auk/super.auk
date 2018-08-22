@@ -1,75 +1,55 @@
-# vim: ft=awk:tabstop=2:softtabstop=2:shiftwidth=2:expandtab
+# vim: ft=awk:ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
 
 @include "lib"
-NR==1 { print $0 }
-END { 
-  for(C in Hi) 
-    if (C != NF)
-      ranges(C,NF)
-  dump(Data) 
-}
-function ranges(c,k,     d0,d,hi,swaps,our) {
-  colget(c,k,d0)
-  hi = xsort(d0,d)
-  cuts(c,d,1,hi,swaps,hi^Enough)
-  colput(c,swaps) 
-}
-function colget(c,k,d,   r,x,y) {
-  fyi("\ncol " Name[c])
-  array(d)
-  for(r in Data) {  
-    x = Data[r][c]
-    y = Data[r][k]
-    if (x != "?")
-      hAS(d,length(d) + 1,"xy",x, y) }
-}
-function xy(i,x,y) {
-  array(i)
-  i.x = x
-  i.y = y
-}
 
-function colput(c,swaps,   r,x) {
-  for(r in Data) {
-    x = Data[r][c]
-    if (x != "?") 
-      Data[r][c] = swaps[x] }
+BEGIN {  rogues();  main() }
+
+function main(   k,c,d,hi,rows) {
+  data(d)
+  k = length(d.nam)
+  print concat(d.name)
+  for(c in d.hi) 
+    if (c != width) { 
+      hi = isort(c,d.rows)
+      cuts(d.rows,c,1,hi,k,hi^The.enough) }
+  dump(d.rows)
 }
-function cuts(c,d,lo,hi,swaps,enough,     pre,r,cut,txt) {
-  txt = pre d[lo].x " " d[hi].x
-  cut = argmin(d,lo,hi,enough)
+######### ######### ######### ######### ######### ######### 
+function cuts(rows,c,lo,hi,k,enough,     pre,r,cut,txt) {
+  txt = pre rows[lo][c] " " rows[hi][c]
+  cut = argmin(rows,c,lo,hi,k,enough)
   if(cut) {
     fyi(txt)
-    cuts(c, d, lo,   cut, swaps,enough,pre "|__ ")
-    cuts(c, d, cut+1, hi, swaps,enough,pre "|__ ") 
+    cuts(rows, c, lo,   cut, k,enough, pre "|__ ")
+    cuts(rows, c, cut+1, hi, k,enough, pre "|__ ") 
   } else  {
-    fyi( txt " ("hi - lo")")
-    for(r=lo; r<=hi; r++) swaps[d[r].x] = d[lo].x 
-  }
+    fyi(txt " (" hi-lo ")")
+    for(r=lo; r<=hi; r++) rows[r][c] = rows[lo][c] }
 }
-function argmin(d,lo,hi,enough,
+######### ######### ######### ######### ######### ######### 
+function argmin(rows,c,lo,hi,k,enough,   
                 i,cut,
                 x,xl,xr,xbest,xtmp,
                 y,yl,yr,ybest,ytmp) {
   if (hi - lo > 2* enough) {
     num(xl); num(xr)
     num(yl); num(yr)
-    for(i=lo; i<=hi; i++) {
-      ninc(xr, d[i].x)
-      ninc(yr, d[i].y)
+    for(i=lo; i<=hi; i++)  {
+      x=d[i][c] ; ninc(xr, x)
+      y=d[i][k] ; ninc(yr, y)
     }
     xbest = xr.sd
     ybest = yr.sd
     for(i=lo; i<=hi; i++) {
-      x=d[i].x
-      y=d[i].y
+      x=d[i][c]
+      y=d[i][k]
       ninc(xl, x); ndec(xr, x)
       ninc(yl, y); ndec(yr, y)
       if (xl.n >= enough)
 	     if (xr.n >= enough)  {
-         xtmp = nxpect(xl,xr) *  Margin
+         xtmp = nxpect(xl,xr) * The.margin
 	       if (xtmp < xbest) {
-           ytmp = nxpect(yl,yr) *  Margin
+           ytmp = nxpect(yl,yr) * The.margin
 	         if (ytmp < ybest) {
 	           cut  = i
 	           xbest = xtmp   

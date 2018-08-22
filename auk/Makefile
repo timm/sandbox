@@ -15,9 +15,6 @@ define myvar
 { print $$0 1}
 endef
 
-xxx:
-	# of $(info $(myvar))
-	gawk --source '$(myvar)'
 
 ok : files $H $N
 
@@ -52,7 +49,6 @@ eg0: ok; $(Awk) lib.awk
 eg1: ok; @cat data/weather.csv | $(Awk) dom.awk
 eg2: ok; @cat data/weatherLong.csv | $(Awk) dom.awk
 eg3: ok; @cat data/auto.csv    | $(Awk) dom.awk
-
 Some=cut -d, -f 4,5,8,9 | sed 's/,/	/g'
 Fields=head -1 data/auto.csv | $(Some)
 eg4:  ok
@@ -65,6 +61,7 @@ eg4best:  ok
 eg4worst:  ok
 	@$(MAKE) eg3 | sort -t, -n -k 9 | head  | $(Some)
 
+eg5a: ok; @$(MAKE) eg1 | $(Awk) unsup.awk
 eg5: ok; @$(MAKE) eg2 | $(Awk) unsup.awk
 eg6: ok; @$(MAKE) eg3 | $(Awk) unsup.awk
 
@@ -75,4 +72,6 @@ eg8: ok; @$(MAKE) eg3 | $(Awk) super.awk
 eg9: ok; @$(MAKE) eg7 | $(Awk) sdtree.awk
 eg10: ok; @$(MAKE) eg8 | $(Awk) sdtree.awk
 
-
+eg11: ok;
+	echo 11
+	$(Awk) csv.awk 

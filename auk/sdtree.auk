@@ -1,11 +1,5 @@
-# vim: ft=awk:tabstop=2:softtabstop=2:shiftwidth=2:expandtab:cindent:formatoptions+=cro
+# vim: ft=awk:ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
 
-
-# I lie tradidd lilights
-# 
-# - when they are green
-# - adas
-# 
 @include "lib"
 
 END { 
@@ -26,10 +20,6 @@ function tree(rows,max,k,   pre,ranges,r,c,use,sorted) {
     if (sorted[r].column == use)
         kids(use, sorted[r],max,k,pre)  
 }
-# Somethings to note:
-#
-# - asda
-# - sdsd
 function kids(use,range,max,k,pre,    txt) {
    if (length( range.rows ) > length(Data)^0.5) {
      print  report(range.rows) pre Name[use] " = " range.value 
