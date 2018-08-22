@@ -7,6 +7,7 @@ BEGIN { main() }
 
 function main(  d) {
   data(d)
+  csv(d)
   print concat(d.name) ",>dom"
   doms(d, The.doms)
   dump(d.rows)

@@ -6,6 +6,7 @@ BEGIN {  rogues();  main() }
 
 function main(   c,d,hi,rows) {
   data(d)
+  csv(d)
   print concat(d.name)
   for(c in d.hi) { 
     hi = isort(c,d.rows)

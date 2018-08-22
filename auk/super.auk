@@ -6,6 +6,7 @@ BEGIN {  rogues();  main() }
 
 function main(   k,c,d,hi,rows) {
   data(d)
+  csv(d)
   k = length(d.nam)
   print concat(d.name)
   for(c in d.hi) 

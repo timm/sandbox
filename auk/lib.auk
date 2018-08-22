@@ -5,37 +5,40 @@
 BEGIN { srand(Seed ? Seed : 1)  }
 
 ######### ######### ######### ######### ######### ######### 
-function data(i,file,          txt,txts,cells,c,r,x) {
-  # slots ==  w lo hi rows name
-  file = file ? file :  "/dev/stdin"
+function data(i) {
+  array(i)
   has(i, "w" )
   has(i, "lo" )
   has(i, "hi" )
   has(i, "rows" )
   has(i, "name" )
+}
+function csv(i,file,fun,          txt,txts,cells,c,r,x) {
+  fun  = fun  ? fun  : "dataInc"
+  file = file ? file :  "/dev/stdin"
   while((getline txt < file) > 0)  {
     gsub(/([ \t\r\n]|#.*)/, "", txt) # no comments,whitespace
-    if (txt) {
-      split(txt, cells, FS)
-      r++
-      for(c in cells) { 
-        x = cells[c]
-        if ( r==1 ) {
-          i.name[c] = x
-          if ( x ~ /[><\$]/) {
-            i.lo[c] =  10^32 
-            i.hi[c] = -10^32
-            if ( x ~ /</ ) i.w[c] =  1
-            if ( x ~ />/ ) i.w[c] = -1  }}
-        else {
-          i.rows[ r-1 ][c] = x
-          if (x != "?") 
-            if (c in i.hi) { 
-              if(x > i.hi[c]) i.hi[c] = x
-              if(x < i.lo[c]) i.lo[c] = x }}}}}
+    if ( split(txt, cells, FS) )
+      @fun(i,r++,cells) }
   close(file)
 }
-
+function dataInc(i,first,cells) {
+  for(c in cells) { 
+    x = cells[c]
+    if ( r==0 ) {
+      i.name[c] = x
+      if ( x ~ /[><\$]/) {
+        i.lo[c] =  10^32 
+        i.hi[c] = -10^32
+        if ( x ~ /</ ) i.w[c] =  1
+        if ( x ~ />/ ) i.w[c] = -1  }}
+    else {
+      i.rows[ r ][c] = x
+      if (x != "?") 
+        if (c in i.hi) { 
+          if(x > i.hi[c]) i.hi[c] = x
+          if(x < i.lo[c]) i.lo[c] = x }}}
+}
 ######### ######### ######### ######### ######### ######### 
 # Num stuff
 
