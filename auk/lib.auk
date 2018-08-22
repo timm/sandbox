@@ -1,6 +1,7 @@
 # vim: ft=awk:ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
 
 @include "config"
+@include "o"
 
 BEGIN { srand(Seed ? Seed : 1)  }
 
@@ -13,16 +14,17 @@ function data(i) {
   has(i, "rows" )
   has(i, "name" )
 }
-function csv(i,file,fun,          txt,txts,cells,c,r,x) {
+function Csv(i,file,fun,          txt,txts,cells,c,r,x) {
   fun  = fun  ? fun  : "dataInc"
   file = file ? file :  "/dev/stdin"
+  print(file)
   while((getline txt < file) > 0)  {
     gsub(/([ \t\r\n]|#.*)/, "", txt) # no comments,whitespace
     if ( split(txt, cells, FS) )
       @fun(i,r++,cells) }
   close(file)
 }
-function dataInc(i,first,cells) {
+function dataInc(i,r,cells) {
   for(c in cells) { 
     x = cells[c]
     if ( r==0 ) {

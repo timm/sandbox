@@ -45,6 +45,7 @@ push:
 	git commit -am pushing
 	git push
 
+ok1: ok; $(Awk) libOk.awk
 eg0: ok; $(Awk) lib.awk
 eg1: ok; @cat data/weather.csv | $(Awk) dom.awk
 eg2: ok; @cat data/weatherLong.csv | $(Awk) dom.awk
