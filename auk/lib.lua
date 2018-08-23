@@ -1,7 +1,89 @@
-# vim: ft=awk:ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
+-- vim: ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
 
-@include "config"
-@include "o"
+require "config"
+
+do
+  local seed0     = 10013
+  local seed      = seed0
+  local modulus   = 2147483647
+  local multipler = 16807
+  function rseed(n) seed = n or seed0 end 
+  function rand() -- park miller
+    seed = (multipler * seed) % modulus
+    return seed / modulus end
+end
+
+find = string.find
+match = function(s,p)  return string.match(s,p) ~= nil end
+
+function ordered(t,  i,tmp)
+  i,tmp = 0,{}
+  for key,_ in pairs(t) do tmp[#tmp+1] = key end
+  table.sort(tmp)
+  return function ()
+    if i < #tmp then
+      i=i+1; return tmp[i], t[tmp[i]] end end end
+
+function split(s, sep,    t,notsep)
+  t, sep = {}, sep or ","
+  notsep = "([^" ..sep.. "]+)"
+  for y in string.gmatch(s, notsep) do t[#t+1] = y end
+  return t
+end
+
+function o(t,     go)
+  go = function (x,       str,sep)
+    if type(x) ~= "table" then return tostring(x) end
+    for k,v in ordered(x) do
+      str = str .. sep .. k .. ": " .. go(v, "{","")
+      sep = ", " end
+    return str .. '}'
+  end
+  return go(t,"{","") end
+
+function data()
+  return {w={}, lo={}, hi={}, rows={}, name={}} end
+
+function dataIn(t, r, cells)
+  if r==0 then
+    for c,x in pairs(cells) do
+      t.name[c] = x
+      if  match(/<>%$/,x) then
+        i.lo[c] = 10^32
+        i.hi[c] = -10^32
+        if match(/</, x) then i.w[c] =  1 end
+        if match(/>/, x) then i.w[c] = -1 end  end end
+  else
+    t.rows[ r ] = {}
+    for c,x in pairs(cells) do
+      if x != "?" and t.hi[c] then 
+          x = tonumber(x)
+          if x > i.hi[c] then i.hi[c] = x end
+          if x < i.lo[c] then i.lo[c] = x end end  end
+    t.rows[r][c] = x end end 
+
+function csv(t, file, fun,      stream,txt,cells,r)
+  fun    = fun or dataIn
+  stream = file and io.input(file) or io.input()
+  r,line = -1,io.read()
+  while line do
+    line = line:gsub("[\t\r ]*","") -- no spaces
+                :gsub("#.*","") -- no comments
+    if #line > 0 then
+      r = r + 1
+      fun(line,r, split(line)) end 
+    line = io.read() end end
+
+
+function rogues(    ignore,match)
+  ignore = {
+           jit=true, math=true, package=true, table=true, coroutine=true,
+           bit=true, os=true, io=true, bit32=true, string=true,
+           arg=true, debug=true, _VERSION=true, _G=true }
+  for k,v in pairs( _G ) do
+    if type(v) ~= "function" and not ignore[k] then
+       assert(match(k,"^[A-Z]"),"rogue local ["..k.."]") end end
+end
 
 BEGIN { srand(Seed ? Seed : 1)  }
 
