@@ -47,20 +47,20 @@ function data()
 function row(t, r, cells)
   if r==0 then
     for c0,x in pairs(cells) do
-      if  not match(/%?/,x) then
+      if not true then --match(/%?/,x) then
         c= #t._use+1
         t._use[ c ] =  c0
         t.name[c] = x
-        if  match(/<>%$/,x) then
+        if  match("[<>%$]",x) then
           t.lo[c] = 10^32
           t.hi[c] = -10^32
-          if match(/</, x) then t.w[c] =  1 end
-          if match(/>/, x) then t.w[c] = -1 end  end end end
+          if match("<", x) then t.w[c] =  1 end
+          if match(">", x) then t.w[c] = -1 end  end end end
   else
     t.rows[ r ] = {}
     for c,c0 in pairs(t._use) do
        x = cells[c0]
-       if x != "?" and t.hi[c] then 
+       if x ~= "?" and t.hi[c] then 
           x = tonumber(x)
           if x > t.hi[c] then t.hi[c] = x end
           if x < t.lo[c] then t.lo[c] = x end end  
