@@ -16,13 +16,13 @@ end
 find = string.find
 match = function(s,p)  return string.match(s,p) ~= nil end
 
-function ordered(t,  i,tmp)
-  i,tmp = 0,{}
-  for key,_ in pairs(t) do tmp[#tmp+1] = key end
-  table.sort(tmp)
+function ordered(t,  i,keys)
+  i,keys = 0,{}
+  for key,_ in pairs(t) do keys[#keys+1] = key end
+  table.sort(keys)
   return function ()
     if i < #tmp then
-      i=i+1; return tmp[i], t[tmp[i]] end end end
+      i=i+1; return keys[i], t[keys[i]] end end end
 
 function split(s, sep,    t,notsep)
   t, sep = {}, sep or ","
@@ -42,28 +42,32 @@ function o(t,     go)
   return go(t,"{","") end
 
 function data()
-  return {w={}, lo={}, hi={}, rows={}, name={}} end
+  return {w={}, lo={}, hi={}, rows={}, name={}, _use={}} end
 
-function dataIn(t, r, cells)
+function row(t, r, cells)
   if r==0 then
-    for c,x in pairs(cells) do
-      t.name[c] = x
-      if  match(/<>%$/,x) then
-        i.lo[c] = 10^32
-        i.hi[c] = -10^32
-        if match(/</, x) then i.w[c] =  1 end
-        if match(/>/, x) then i.w[c] = -1 end  end end
+    for c0,x in pairs(cells) do
+      if  not match(/%?/,x) then
+        c= #t._use+1
+        t._use[ c ] =  c0
+        t.name[c] = x
+        if  match(/<>%$/,x) then
+          t.lo[c] = 10^32
+          t.hi[c] = -10^32
+          if match(/</, x) then t.w[c] =  1 end
+          if match(/>/, x) then t.w[c] = -1 end  end end end
   else
     t.rows[ r ] = {}
-    for c,x in pairs(cells) do
-      if x != "?" and t.hi[c] then 
+    for c,c0 in pairs(t._use) do
+       x = cells[c0]
+       if x != "?" and t.hi[c] then 
           x = tonumber(x)
-          if x > i.hi[c] then i.hi[c] = x end
-          if x < i.lo[c] then i.lo[c] = x end end  end
-    t.rows[r][c] = x end end 
+          if x > t.hi[c] then t.hi[c] = x end
+          if x < t.lo[c] then t.lo[c] = x end end  
+      t.rows[r][c] = x end end  end 
 
 function csv(t, file, fun,      stream,txt,cells,r)
-  fun    = fun or dataIn
+  fun    = fun or row
   stream = file and io.input(file) or io.input()
   r,line = -1,io.read()
   while line do
