@@ -1,6 +1,6 @@
 -- vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
 
-the = {seed = 10013,
+The = {seed = 10013,
        ok = {tries = 0, fails  =0},
        doms   = 100, 
        enough = 100,
