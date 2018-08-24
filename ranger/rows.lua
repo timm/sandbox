@@ -13,18 +13,20 @@ function header(t,cells,     c,w)
       c = #t._use+1
       t._use[c] = c0
       t.name[c] = x
-      if x:match("[<>%$]") then
-	w = x:match("<") and 1 or -1
-	t.nums[c] = num(w) end end end
+      if x:match("[<>%$]") then t.nums[c] = num() end 
+      if x:match("<")      then t.w[c] =  1 end
+      if x:match(">")      then t.w[c] = -1 end end end
 end
 
 function row(t,r,cells,     x)
   t.rows[r] = {}
   for c,c0 in pairs(t._use) do
     x = cells[c0]
-    t.rows[r][c] = x 
     if t.nums[c] then 
-      ninc(t.nums[c], tonumber(x)) end end
+      if x ~= "?" then
+	x = tonumber(x)
+        ninc(t.nums[c], x) end end
+    t.rows[r][c] = x  end
 end  
 
 function rows(file,t,f0,f,      stream,txt,cells,r,line)

@@ -1,12 +1,12 @@
 -- vim: ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
----------~---------~---------~---------~---------~---------~
+--------- --------- --------- --------- --------- ---------~
 
 require "config"
 require "rows"
 require "num"
 require "random"
 
----------~---------~---------~---------~---------~---------~
+--------- --------- --------- --------- --------- --------- 
 -- ## List Stuff
 
 function ksort(k,t) 
@@ -33,7 +33,7 @@ function o(t,    indent,   formatting)
       print(formatting .. v) end end 
 end
 
----------~---------~---------~---------~---------~---------~
+--------- --------- --------- --------- --------- --------- 
 -- ## String Stuff
 
 function split(s, sep,    t,notsep)
@@ -45,7 +45,8 @@ end
 
 cat = table.concat
 function dump(a,sep) 
-  for i=1,#a do cat(a[i],sep) end
+  for i=1,#a do print(cat(a[i],sep or ",")) end
 end
 
 function fyi(x) io.stderr:write(x .. "\n") end
+
