@@ -15,6 +15,8 @@ function rogues(    ignore,match)
   end end end 
 end 
 
+function off(t) return t end
+
 function ok(t,  n)
   rogues()
   for x,f in pairs(t) do
@@ -25,5 +27,5 @@ function ok(t,  n)
       The.ok.fails = The.ok.fails + 1
       print("-- E> Failure: " .. err)
       n = 1-((The.ok.tries-The.ok.fails)/The.ok.tries)
-      print("-- Failures: ".. 100*n  .. "%") 
-end end end
+      print("-- Failures: ".. 100*n  .. "%") end end 
+end

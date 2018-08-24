@@ -48,4 +48,4 @@ function dump(a,sep)
   for i=1,#a do cat(a[i],sep) end
 end
 
-function fyi(x)  io.stderr:write(x .. "\n") end
+function fyi(x) io.stderr:write(x .. "\n") end

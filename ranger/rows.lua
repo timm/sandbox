@@ -1,52 +1,46 @@
+--vim: ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
+--------- --------- --------- --------- --------- --------- 
+
+require "num"
 
 function data()
-  return {w={}, lo={}, hi={}, rows={}, name={}, _use={}} 
+  return {w={}, nums={}, rows={}, name={}, _use={}} 
 end
 
-function header(t,cells)
+function header(t,cells,     c,w)
   for c0,x in pairs(cells) do
     if not x:match("%?")  then
       c = #t._use+1
       t._use[c] = c0
       t.name[c] = x
       if x:match("[<>%$]") then
-        t.lo[c] = 10^32
-        t.hi[c] = -10^32
-        if x:match("<") then t.w[c] =  1 end
-        if x:match(">") then t.w[c] = -1 end  end end end
+	w = x:match("<") and 1 or -1
+	t.nums[c] = num(w) end end end
 end
 
-function row(t,r,cells)
-  t.rows[ r ] = {}
+function row(t,r,cells,     x)
+  t.rows[r] = {}
   for c,c0 in pairs(t._use) do
     x = cells[c0]
-    if x ~= "?" and t.hi[c] then 
-      x = tonumber(x)
-      if x > t.hi[c] then t.hi[c] = x end
-      if x < t.lo[c] then t.lo[c] = x end 
-    end  
     t.rows[r][c] = x 
-  end 
+    if t.nums[c] then 
+      ninc(t.nums[c], tonumber(x)) end end
 end  
 
-function rows(file, t,f0,f,      stream,txt,cells,r)
+function rows(file,t,f0,f,      stream,txt,cells,r,line)
   t  = t  or data()
   f0 = f0 or header
   f  = f  or row
   stream = file and io.input(file) or io.input()
   r,line = -1,io.read()
   while line do
-    line = line:gsub("[\t\r ]*","") -- no spaces
-                :gsub("#.*","") -- no comments
-    if #line > 0 then
+    line:gsub("([\t\r ]*|#.*)","")
+    cells = split(line)
+    line  = io.read()
+    if #cells > 0 then
       r = r + 1
-      cells = split(line)
-      if r==0 then f0(t,cells) else f(t,r,cells) end 
-    end
-    line = io.read() 
-  end
+      if r==0 then f0(t,cells) else f(t,r,cells) end end
+  end 
   io.close(stream)
   return t
 end 
-
-
