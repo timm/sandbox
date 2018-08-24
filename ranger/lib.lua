@@ -1,10 +1,13 @@
 -- vim: ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
---------- --------- --------- --------- --------- --------- 
+---------~---------~---------~---------~---------~---------~
 
 require "config"
 require "rows"
 require "num"
 require "random"
+
+---------~---------~---------~---------~---------~---------~
+-- ## List Stuff
 
 function ksort(k,t) 
   return table.sort(a,function(x,y) return x[k] < y[k] end) 
@@ -29,6 +32,9 @@ function o(t,    indent,   formatting)
     else
       print(formatting .. v) end end 
 end
+
+---------~---------~---------~---------~---------~---------~
+-- ## String Stuff
 
 function split(s, sep,    t,notsep)
   t, sep = {}, sep or ","
