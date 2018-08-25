@@ -29,11 +29,7 @@ function row(t,r,cells,     x)
     t.rows[r][c] = x  end
 end  
 
-function rows(file,t,f0,f,      stream,txt,cells,r,line)
-  t  = t  or data()
-  f0 = f0 or header
-  f  = f  or row
-  stream = file and io.input(file) or io.input()
+function rows1(stream, t,f0,f,   r,line,cells)
   r,line = -1,io.read()
   while line do
     line:gsub("([\t\r ]*|#.*)","")
@@ -45,4 +41,8 @@ function rows(file,t,f0,f,      stream,txt,cells,r,line)
   end 
   io.close(stream)
   return t
-end 
+end
+
+function rows(file,t,f0,f,      stream,txt,cells,r,line)
+  return rows1( file and io.input(file) or io.input(),
+                t  or data(), f0 or header, f or row) end 

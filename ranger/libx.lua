@@ -33,6 +33,7 @@ ok {csv = function (    d)
     assert(#d._use == 4)
     assert(d.nums[2].lo == 64)  end }
 
-for i=1,30 do
-  io.write(another(4,{"a","b","c","d"}))
+for i=1,100 do
+  io.write(another(2,{"a","!","c","d"}))
 end
+print()
