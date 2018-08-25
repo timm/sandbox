@@ -50,3 +50,13 @@ end
 
 function fyi(x) io.stderr:write(x .. "\n") end
 
+
+--------- --------- --------- --------- --------- --------- 
+-- ## Meta Stuff
+
+function main(t)
+  if type(t.main) == 'function' then
+    t.main() end end
+
+
+return {main=function() print("Lib loaded") end}

@@ -28,8 +28,8 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-.eggs/
 lib/
+.eggs/
 lib64/
 parts/
 sdist/

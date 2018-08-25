@@ -1,4 +1,4 @@
-#!/usr/local/bin/lua
+#!/usr/bin/env lua
 -- vim: ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
 --------- --------- --------- --------- --------- ---------~
 
@@ -36,3 +36,4 @@ if arg and debug.getinfo(1, "S").short_src == arg[0] then
   doms(rows())
 end
 
+return {main = function() doms(data()) end}
