@@ -4,7 +4,11 @@
 require "num"
 
 function data()
-  return {w={}, nums={}, rows={}, name={}, _use={}} 
+  return {w={}, nums={}, class=nil, rows={}, name={}, _use={}} 
+end
+
+function indep(t,c)
+   return not t.w[c] and t.class ~= c 
 end
 
 function header(t,cells,     c,w)
@@ -14,8 +18,9 @@ function header(t,cells,     c,w)
       t._use[c] = c0
       t.name[c] = x
       if x:match("[<>%$]") then t.nums[c] = num() end 
-      if x:match("<")      then t.w[c] =  1 end
-      if x:match(">")      then t.w[c] = -1 end end end
+      if x:match("<")      then t.w[c]  = -1 end
+      if x:match(">")      then t.w[c]  =  1 end 
+      if x:match("!")      then t.class =  c end end end
 end
 
 function row(t,r,cells,     x)
@@ -46,3 +51,4 @@ end
 function rows(file,t,f0,f,      stream,txt,cells,r,line)
   return rows1( file and io.input(file) or io.input(),
                 t  or data(), f0 or header, f or row) end 
+

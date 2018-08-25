@@ -13,4 +13,9 @@ pathmunge $PWD/bin
 alias pull="git pull"
 alias push="git commit -am pushing; git push"
 
-PS1="<> $PS1"
+make -f etc/setup.mk
+
+
+ok() {
+  (cd ../tests; lua $1.lua)
+}

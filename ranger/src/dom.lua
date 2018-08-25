@@ -21,7 +21,7 @@ end
 function doms(t,  n,c,row1,row2,s)
   n= The.dom.samples
   c= #t.name + 1
-  print(cat(t.name) .. ",>dom")
+  print(cat(t.name,",") .. ",>dom")
   for r1=1,#t.rows do
     row1 = t.rows[r1]
     row1[c] = 0
@@ -32,8 +32,7 @@ function doms(t,  n,c,row1,row2,s)
   dump(t.rows)
 end
 
-if arg and debug.getinfo(1, "S").short_src == arg[0] then
-  doms(rows())
-end
+function mainDom() doms(rows()) end
 
-return {main = function() doms(data()) end}
+return {main = mainDom}
+

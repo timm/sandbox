@@ -1,3 +1,4 @@
+all : dirs datas bins
 
 B=bin
 S=src
@@ -7,11 +8,10 @@ luas=$(shell cd $S; ls *.lua)
 csvs=$(shell cd $D; ls *.csv)
 
 dirs:
-	mkdir -p bin src data
+	@mkdir -p bin src data
 
 bins: 
 	@$(foreach f,$(subst .lua,,$(luas)),\
-		echo $f;\
 		echo "#!$L lua" > $B/$f;\
 		echo "package.path = package.path .. ';../$S/?.lua'" >> $B/$f;\
 	        echo "require('lib')" >>$B/$f; \
@@ -20,18 +20,7 @@ bins:
 
 datas:
 	@$(foreach f,$(subst .csv,,$(csvs)),\
-		echo $f;\
 		echo "#!$L sh" > $B/$f;\
 		echo "cat ../$D/$f.csv" >> $B/$f;\
 		chmod +x $B/$f; )
-
-all : dirs datas bins
-
-pull:
-	git pull
-
-push:
-	git commit -am pushing
-	git push
-
 
