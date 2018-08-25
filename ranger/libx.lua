@@ -26,7 +26,7 @@ ok { splits = function(   t)
           assert("b" == t[2])
           end }
 
-o{a=1,b={k={ll=234,m={}},d=44},c=3}
+o{a=1,b={k={ll=234,m={}},d=44},c=3,d={30,20,10}}
 
 ok {csv = function (    d) 
     d=rows("data/weather.csv") 

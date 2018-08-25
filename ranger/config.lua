@@ -1,8 +1,9 @@
--- vim: tabstop=2:softtabstop=2:shiftwidth=2:expandtab
+-- vim: ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
+---------~---------~---------~---------~---------~---------~
 
-The = {seed = 10013,
-       ok = {tries = 0, fails  =0},
-       doms   = 100, 
+The = {random = {seed = 10013},
+       ok     = {tries = 0, fails  =0},
+       dom    = {samples=100}, 
        enough = 100,
        margin = 1.02,
        cohen  = 0.2,
