@@ -7,9 +7,8 @@ function data()
   return {w={}, nums={}, class=nil, rows={}, name={}, _use={}} 
 end
 
-function indep(t,c)
-   return not t.w[c] and t.class ~= c 
-end
+function indep(t,c) return not t.w[c] and t.class ~= c end
+function dep(t,c)   return not indep(t,c) end
 
 function header(t,cells,     c,w)
   for c0,x in pairs(cells) do
