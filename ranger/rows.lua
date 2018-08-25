@@ -36,7 +36,7 @@ function rows(file,t,f0,f,      stream,txt,cells,r,line)
   while line do
     line:gsub("([\t\r ]*|#.*)","")
     cells = split(line)
-    line  = io.read()
+    line = io.read()
     if #cells > 0 then
       r = r + 1
       if r==0 then f0(t,cells) else f(t,r,cells) end end

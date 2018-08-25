@@ -31,8 +31,8 @@ o{a=1,b={k={ll=234,m={}},d=44},c=3}
 ok {csv = function (    d) 
     d=rows("data/weather.csv") 
     assert(#d._use == 4)
-    assert(d.lo[2] == 64)  end }
+    assert(d.nums[2].lo == 64)  end }
 
 for i=1,30 do
-  print(another(4,{"aa","bb","cc","dd"}))
+  io.write(another(4,{"a","b","c","d"}))
 end
