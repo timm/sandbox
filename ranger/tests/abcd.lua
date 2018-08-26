@@ -18,13 +18,13 @@ ok { abcd = function()
 --  0 2 0 | b = no
 --  0 1 5 | c = maybe
 
-ok { abcd = function ()
-  local x = abcd()
+ok { abcd = function()
+  local x = abcd("synthetic","raw")
   for _ = 1,6 do abcdInc(x,"yes",   "yes")   end
   for _ = 1,2 do abcdInc(x,"no",    "no")    end
   for _ = 1,5 do abcdInc(x,"maybe", "maybe") end
   abcdInc(x,"maybe","no")
-  abcdShow()
+  abcdShow(x)
 end }
 --
 -- === Detailed Accuracy By Class ===

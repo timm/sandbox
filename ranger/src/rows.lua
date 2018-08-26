@@ -29,7 +29,7 @@ function row(t,r,cells,     x)
     if t.nums[c] then 
       if x ~= "?" then
 	x = tonumber(x)
-        ninc(t.nums[c], x) end end
+        numInc(t.nums[c], x) end end
     t.rows[r][c] = x  end
 end  
 

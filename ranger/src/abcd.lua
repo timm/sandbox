@@ -3,8 +3,9 @@
 
 require "lib"
 
-function abcd() 
-  return {known ={}, a={},b={},c={},d={},rx="rx", db="db"}
+function abcd(db,rx) 
+  return {known ={}, a={},b={},c={},d={},
+          rx=rx or "rx", db=db or "db", yes=0, no=0}
 end
 
 -----------------------------------------------------------
@@ -64,14 +65,14 @@ function abcdReport(t,   out,pd,pf,pn,prec,g,f,acc,a,b,c,d)
 end
 
 -----------------------------------------------------------
-function abcdShow(t,  head,t,j)
+function abcdShow(t0, t,  head,t,j,new)
   local head={"db", "rx", "num", "a", "b", 
        "c", "d", "acc",  "prec", "pd",  
        "pf", "f"}
   t={}
   t[1] = head
   t[1][ #head+1 ] = "class"
-  for class,row in pairs(abcdReport(t)) do
+  for class,row in pairs(abcdReport(t0)) do
      new={}
      for k,f in pairs(head) do
        j=k
@@ -79,5 +80,5 @@ function abcdShow(t,  head,t,j)
        new[ #new+1 ] = class
      t[ #t+1 ] = new
   end
-  Lib.cols( t , "%5.0f" ) 
+  cols( t , "%5.0f" ) 
 end

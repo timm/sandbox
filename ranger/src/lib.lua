@@ -27,7 +27,9 @@ function fyi(x) io.stderr:write(x .. "\n") end
 -- ## Table Stuff
 
 function ksort(k,t) 
-  return table.sort(a,function(x,y) return x[k] < y[k] end) 
+  table.sort(t,function(x,y) return 
+            x[k] ~= "?" and y[k] ~="?" and x[k] < y[k] end) 
+  return t
 end  
 
 function ordered(t,  i,keys)

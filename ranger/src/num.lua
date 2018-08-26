@@ -7,7 +7,14 @@ function num()
           w=1}
 end
 
-function ninc(t,x,    d) 
+function nums(t,f,   n) 
+  n = num()
+  f = f or function(z) return z end
+  for _,x in pairs(t) do numInc(n,x) end
+  return n
+end
+
+function numInc(t,x,    d) 
   if x == "?" then return x end
   t.n  = t.n + 1
   d    = x - t.mu
@@ -20,7 +27,7 @@ function ninc(t,x,    d)
   return x  
 end
 
-function ndec(t,x,    d) 
+function numDec(t,x,    d) 
   if (x == "?") then return x end
   if (t.n == 1) then return x end
   t.n  = t.n - 1
@@ -32,11 +39,11 @@ function ndec(t,x,    d)
   return x
 end
 
-function norm(t,x,     y) 
+function numNorm(t,x,     y) 
   return x=="?" and 0.5 or (x-t.lo) / (t.hi-t.lo + 10^-32)
 end
 
-function nxpect(i,j,   n)  
+function numXpect(i,j,   n)  
   n = i.n + j.n +0.0001
   return i.n/n * i.sd+ j.n/n * j.sd
 end
