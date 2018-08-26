@@ -30,7 +30,7 @@ ok { splits = function(   t)
 o{a=1,b={k={ll=234,m={}},d=44},c=3,d={30,20,10}}
 
 ok {csv = function (    d) 
-    d=rows("data/weather.csv") 
+    d=rows("../data/weather.csv") 
     assert(#d._use == 4)
     assert(d.nums[2].lo == 64)  end }
 
@@ -38,3 +38,11 @@ for i=1,100 do
   io.write(another(2,{"a","!","c","d"}))
 end
 print()
+
+
+ok { cols = function()
+     local t={ {"name", "age", "shoesize"},
+               {"tim Menzies", 20, 40},
+               {"jane", 2.312211, 20 } }
+     cols(t, "%5.2f")
+end}
