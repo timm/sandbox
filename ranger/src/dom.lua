@@ -10,8 +10,8 @@ function dom(t,row1,row2,     n,a0,a,b0,b,s1,s2)
   for c,w in pairs(t.w) do
     a0  = row1[c]
     b0  = row2[c]
-    a   = norm( t.nums[c], a0)
-    b   = norm( t.nums[c], b0)
+    a   = numNorm( t.nums[c], a0)
+    b   = numNorm( t.nums[c], b0)
     s1 = s1 - 10^(w * (a-b)/n)
     s2 = s2 - 10^(w * (b-a)/n)
   end
