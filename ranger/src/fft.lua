@@ -10,7 +10,6 @@ function numScore(t,c,y,lo,hi,   n)
   return {score=n.mu,c=c,lo=lo,hi=hi}
 end
 
-
 function bestSplit(t,s)
   all = {}
   y   = #t.name
