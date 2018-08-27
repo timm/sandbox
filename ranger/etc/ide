@@ -8,13 +8,12 @@ pathmunge () {
         fi
 }
 
-pathmunge $PWD/bin
+pathmunge $PWD/bin after
 
 alias pull="git pull"
 alias push="git commit -am pushing; git push"
 
 make -f etc/setup.mk
-
 
 ok() {
   (cd ../tests; lua $1.lua)

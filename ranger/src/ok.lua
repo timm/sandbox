@@ -4,7 +4,7 @@ require "lib"
 
 function rogues(    ignore,match)
   ignore = {
-           jit=true, math=true, package=true, table=true, 
+           jit=true, utf8=true, math=true, package=true, table=true, 
            coroutine=true, bit=true, os=true, io=true, 
            bit32=true, string=true, arg=true, debug=true, 
            _VERSION=true, _G=true }

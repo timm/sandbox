@@ -3,19 +3,13 @@
 
 function num()  
   return {n=0, mu=0, m2=0, sd=0, 
-          lo=10^32, hi=-10^32, 
+          lo=10^32, hi=-10^32, all={},
           w=1}
-end
-
-function nums(t,f,   n) 
-  n = num()
-  f = f or function(z) return z end
-  for _,x in pairs(t) do numInc(n,x) end
-  return n
 end
 
 function numInc(t,x,    d) 
   if x == "?" then return x end
+  t.all[#t.all + 1] = x
   t.n  = t.n + 1
   d    = x - t.mu
   t.mu = t.mu + d/t.n
@@ -47,5 +41,4 @@ function numXpect(i,j,   n)
   n = i.n + j.n +0.0001
   return i.n/n * i.sd+ j.n/n * j.sd
 end
-
 
