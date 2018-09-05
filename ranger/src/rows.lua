@@ -79,6 +79,7 @@ end
 
 -- For example, the above example call to `names2data` returns
 
+i
 function row(t,cells,     x,r)
   r= #t.rows+1
   t.rows[r] = {}

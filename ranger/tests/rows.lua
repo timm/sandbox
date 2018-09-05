@@ -6,6 +6,8 @@ require "lib"
 require "ok"
 require "rows"
 
+o(names2data({'outlook', '$temp', '<humid', 'wind', '!play'}))
+
 o(rows("../data/weatherLong.csv"))
 rogues()
 
