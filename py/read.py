@@ -1,4 +1,4 @@
-import re,traceback
+import sys,re,traceback,zipfile
 
 class O:
   y=n=0
@@ -75,9 +75,17 @@ DATA2 = """
 
 
 
-def lines(s):
+def lines(s=None,f=None):
    "Return contents, one line at a time."
-   if s[-3:] in ["csv","dat"]:
+   if not s:
+     for line in sys.stdin:
+       yield line
+   elif s[-3:] == "zip": # <== warning, this clause not tested
+     with zipfile.ZipFile(s) as z:
+       with z.open(f, 'rt') as f:
+         for line in f:
+            yield line
+   elif s[-3:] in ["csv","dat"]:
      with open(s) as fs:
        for line in fs: 
          yield line
@@ -120,7 +128,7 @@ def prep(src,   nums=None):
      yield xs
 
 
-def ok0(s):
+def ok0(s=None):
   for row in prep(cols(rows(lines(s)))):
     print(row)
 
@@ -129,6 +137,13 @@ def ok1(): ok0(DATA1)
 
 @O.k
 def ok2(): ok0(DATA2)
+
+@O.k
+def ok3(): 
+  """If this hangs, just hit control-d and next time you run it, use 
+  'cat file.csv | python3 read.py'
+  """
+  ok0()
 
 if __name__== "__main__":
   O.report()
