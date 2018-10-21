@@ -47,6 +47,9 @@ works([One|All], X, N0, N) :-
   ->  works(All,X,1+N0,N) | works(All,X,N0,N).
 
 
-printl(X) :- forall(member(Y,X),(print(Y),nl)).
-
+printl(X) :- nl,forall(member(Y,X),(print(Y),nl)).
+:- finds1(L),printl(L).
+:- finds2(L),printl(L).
+:- finds3(L),printl(L).
+:- halt.
 
