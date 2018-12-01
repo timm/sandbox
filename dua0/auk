@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+Var=$PWD/var
+
+prep() { gawk --source '
+{$0=gensub(/\.([^0-9])([a-zA-Z0-9_]*)/,"[\"\\1\\2\"]","g",$0)}
+{print gensub(/__/,".","g",$0)}
+' -
+}
+
+for i in *.awk; do
+  if [ $i -nt $Var/$i ]; then
+     cat $i | prep > $Var/$i
+  fi
+done
+
+AWKPATH="$Var" gawk --source "`cat $1 | prep`"

@@ -1,0 +1,24 @@
+#!/usr/bin/env auk
+# vim: filetype=awk: ts=2 sw=2 sts=2 expandtab:cindent:formatoptions+=cro 
+
+@include "lib"
+BEGIN { new(Tokens) }
+function sym(i) {
+  if ( ! (i in Tokens) )
+    Tokens[i] = length(Tokens)+1
+  return Tokens[i]
+}
+
+BEGIN{ 
+  split("ZABCDEFGHIJKLMNOPQRSTUVWXY",_COLS,"") 
+}
+
+function col(c,   right, left) {
+  right = _COLS[(c % 26) + 1]
+  left  = c > 26 ? _COLS[int((c-1)/26) + 1 ] : ""
+  return left right
+}
+
+function aa(b) { return b.c.d }
+
+BEGIN {for(i=1;i<30;i++) print i,col(i) }
