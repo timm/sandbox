@@ -14,4 +14,15 @@ for i in *.awk; do
   fi
 done
 
-AWKPATH="$Var" gawk --source "`cat $1 | prep`"
+echo $1
+
+if [ -f $1 ]; then
+  AWKPATH="$Var" gawk --source "`cat $1 | prep`"
+elif [ "$1"=="hi" ]; then
+  git pull
+elif [ "$1"=="bye" ]; then
+	echo 11
+  git commit -am "pushing"
+  git push
+  git status
+fi
