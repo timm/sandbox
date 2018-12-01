@@ -14,17 +14,11 @@ for i in *.awk; do
   fi
 done
 
-echo $1
-set -x 
 if [ -f "$1" ]; then
-	echo 1
   AWKPATH="$Var" gawk --source "`cat $1 | prep`"
 elif [ "$1" == "hi" ]; then
-	echo 2
   git pull
 elif [ "$1" == "bye" ]; then
-	echo 3
-	echo 11
   git commit -am "pushing"
   git push
   git status
